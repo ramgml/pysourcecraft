@@ -6,7 +6,7 @@ import asyncio
 import os
 
 from pysourcecraft import SourceCraftClient, APIError
-from pysourcecraft.models import CreateIssueRequest, UpdateIssueRequest, IssueState
+from pysourcecraft.models import CreateIssueRequest, UpdateIssueRequest
 
 
 async def list_issues():
@@ -25,10 +25,8 @@ async def list_issues():
             issues = await client.issues.list(owner, repo_name, page=1, per_page=5)
             print(f"Found {issues.total} issues in {owner}/{repo_name}:")
             for issue in issues.data:
-                print(f"  - #{issue.number}: {issue.title}")
-                print(
-                    f"    State: {issue.state.value}, Author: {issue.creator.username}"
-                )
+                print(f"  - {issue.slug}: {issue.title}")
+                print(f"    State: {issue.status.name}, Author: {issue.author.slug}")
                 print(f"    Created: {issue.created_at}")
                 print()
 
@@ -53,14 +51,17 @@ async def get_issue_details():
             issue_number = 1  # Replace with actual issue number
 
             issue = await client.issues.get(owner, repo_name, issue_number)
-            print(f"Issue #{issue.number}: {issue.title}")
-            print(f"State: {issue.state.value}")
-            print(f"Author: {issue.creator.username}")
-            print(f"Assignees: {[assignee.username for assignee in issue.assignees]}")
+            print(f"Issue {issue.slug}: {issue.title}")
+            print(f"State: {issue.status.name}")
+            print(f"Author: {issue.author.slug}")
+            assignee = issue.assignee.slug if issue.assignee else "Unassigned"
+            print(f"Assignee: {assignee}")
             print(f"Labels: {[label.name for label in issue.labels]}")
             print(f"Created: {issue.created_at}")
             print(f"Updated: {issue.updated_at}")
-            print(f"Body: {issue.body[:100] if issue.body else 'No description'}...")
+            print(
+                f"Description: {issue.description[:100] if issue.description else 'No description'}..."
+            )
 
         except APIError as e:
             if e.status_code == 404:
@@ -80,6 +81,7 @@ async def create_and_update_issue():
         try:
             owner = "your-username"
             repo_name = "your-repo-name"
+            issue_number = 1  # Replace with actual issue number
 
             # Create issue
             create_request = CreateIssueRequest(
@@ -89,29 +91,26 @@ async def create_and_update_issue():
             )
 
             new_issue = await client.issues.create(owner, repo_name, create_request)
-            print(f"✓ Created issue #{new_issue.number}: {new_issue.title}")
+            print(f"✓ Created issue {new_issue.slug}: {new_issue.title}")
 
             # Update issue
             update_request = UpdateIssueRequest(
                 title="Updated Test Issue from PySourceCraft",
                 body="This issue was updated using the PySourceCraft API client.",
-                state=IssueState.OPEN,
             )
 
             updated_issue = await client.issues.update(
-                owner, repo_name, new_issue.number, update_request
+                owner, repo_name, issue_number, update_request
             )
             print(f"✓ Updated issue title to: {updated_issue.title}")
 
             # Close issue
-            closed_issue = await client.issues.close(owner, repo_name, new_issue.number)
-            print(f"✓ Closed issue #{closed_issue.number}")
+            closed_issue = await client.issues.close(owner, repo_name, issue_number)
+            print(f"✓ Closed issue {closed_issue.slug}")
 
             # Reopen issue
-            reopened_issue = await client.issues.reopen(
-                owner, repo_name, new_issue.number
-            )
-            print(f"✓ Reopened issue #{reopened_issue.number}")
+            reopened_issue = await client.issues.reopen(owner, repo_name, issue_number)
+            print(f"✓ Reopened issue {reopened_issue.slug}")
 
         except APIError as e:
             print(f"Error creating/updating issue: {e}")
@@ -143,7 +142,7 @@ async def manage_issue_comments():
             comments = await client.issues.list_comments(owner, repo_name, issue_number)
             print(f"Found {comments.total} comments on issue #{issue_number}:")
             for comment in comments.data[:2]:  # Show first 2
-                print(f"  - {comment.user.username}: {comment.body[:50]}...")
+                print(f"  - {comment.author.slug}: {comment.body[:50]}...")
 
         except APIError as e:
             if e.status_code == 404:

@@ -78,7 +78,6 @@ class LinkType(str, Enum):
     HOMEPAGE = "homepage"
     EMAIL = "email"
     TELEGRAM = "telegram"
-    DEFAULT = "default"
 
 
 class Link(BaseModel):

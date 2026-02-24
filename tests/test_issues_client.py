@@ -14,7 +14,6 @@ from pysourcecraft.models import (
     Issue,
     IssueComment,
     IssueFilters,
-    IssueState,
     PaginatedResponse,
     UpdateIssueRequest,
 )
@@ -58,7 +57,7 @@ class TestIssuesClientList:
             "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/issues"
         ).mock(return_value=Response(200, json=response_data))
 
-        filters = IssueFilters(state=IssueState.OPEN, assignee_id="user-123")
+        filters = IssueFilters(state="open", assignee_id="user-123")
         result = await client.issues.list("testuser", "test-repo", filters=filters)
 
         assert isinstance(result, PaginatedResponse)
@@ -107,9 +106,9 @@ class TestIssuesClientGet:
 
         assert isinstance(result, Issue)
         assert result.id == "issue-001"
-        assert result.number == 1
+        assert result.slug == "test-issue"
         assert result.title == "Test Issue"
-        assert result.state == IssueState.OPEN
+        assert result.status.slug == "open"
 
 
 class TestIssuesClientCreate:
@@ -264,17 +263,14 @@ class TestIssuesClientEvents:
             "event": "labeled",
             "actor": {
                 "id": "user-123",
-                "username": "testuser",
-                "avatar_url": "https://avatars.sourcecraft.dev/u/123",
+                "slug": "testuser",
             },
             "created_at": mock_datetime.isoformat(),
             "label": {
                 "id": "label-1",
+                "slug": "bug",
                 "name": "bug",
                 "color": "ff0000",
-                "description": "Something is broken",
-                "created_at": mock_datetime.isoformat(),
-                "updated_at": mock_datetime.isoformat(),
             },
             "assignee": None,
             "milestone": None,

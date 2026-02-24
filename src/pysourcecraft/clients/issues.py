@@ -106,10 +106,8 @@ class IssuesClient(BaseResourceClient):
         Returns:
             Closed issue
         """
-        from pysourcecraft.models import IssueState
-
         return await self.update(
-            owner, repo, issue_number, UpdateIssueRequest(state=IssueState.CLOSED)
+            owner, repo, issue_number, UpdateIssueRequest(state="closed")
         )
 
     async def reopen(self, owner: str, repo: str, issue_number: int) -> Issue:
@@ -123,10 +121,8 @@ class IssuesClient(BaseResourceClient):
         Returns:
             Reopened issue
         """
-        from pysourcecraft.models import IssueState
-
         return await self.update(
-            owner, repo, issue_number, UpdateIssueRequest(state=IssueState.OPEN)
+            owner, repo, issue_number, UpdateIssueRequest(state="open")
         )
 
     async def list_comments(

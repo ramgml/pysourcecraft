@@ -40,7 +40,8 @@ class TestUsersClientGet:
         assert isinstance(result, User)
         assert result.id == "user-123"
         assert result.username == "testuser"
-        assert result.type == UserType.USER
+        assert result.display_name == "Test User"
+        assert result.bio == "A test user"
 
     @pytest.mark.asyncio
     async def test_get_user_by_username(

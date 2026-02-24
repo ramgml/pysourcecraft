@@ -60,32 +60,35 @@ def mock_datetime() -> datetime:
 
 @pytest.fixture
 def mock_user_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock user data."""
+    """Return mock user data matching UserProfile schema."""
     return {
         "id": "user-123",
+        "display_name": "Test User",
         "username": "testuser",
-        "type": "User",
-        "name": "Test User",
-        "email": "test@example.com",
         "bio": "A test user",
-        "blog": "https://blog.example.com",
-        "company": "Test Corp",
-        "location": "San Francisco",
-        "hireable": True,
-        "url": "https://api.sourcecraft.dev/v1/users/testuser",
-        "html_url": "https://sourcecraft.dev/testuser",
-        "avatar_url": "https://avatars.sourcecraft.dev/u/123",
-        "gravatar_id": "",
-        "created_at": mock_datetime.isoformat(),
-        "updated_at": mock_datetime.isoformat(),
-        "twitter_username": "testuser",
-        "followers_count": 100,
-        "following_count": 50,
-        "public_repos_count": 25,
-        "public_gists_count": 10,
-        "private_gists_count": 5,
-        "two_factor_authentication": True,
-        "site_admin": False,
+        "location": {
+            "country": "USA",
+            "city": "San Francisco",
+        },
+        "timezone": {
+            "iana_timezone": "America/Los_Angeles",
+        },
+        "workplace": {
+            "company": "Test Corp",
+            "position": "Developer",
+        },
+        "links": [
+            {"link": "https://blog.example.com", "type": "blog"},
+        ],
+        "status": {
+            "message": "Working on code",
+            "emoji": "💻",
+        },
+        "avatar": {
+            "url": "https://avatars.sourcecraft.dev/u/123",
+        },
+        "background_image": None,
+        "visibility": "public",
     }
 
 
@@ -170,6 +173,7 @@ def mock_repository_data(mock_datetime: datetime) -> dict[str, Any]:
         },
         "links": [
             {"link": "https://test-repo.example.com", "type": "homepage"},
+            {"link": "https://twitter.com/testrepo", "type": "social_network"},
         ],
         "counters": {
             "forks": "10",
@@ -229,57 +233,64 @@ def mock_repository_data(mock_datetime: datetime) -> dict[str, Any]:
 
 @pytest.fixture
 def mock_issue_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock issue data."""
+    """Return mock issue data matching swagger schema."""
     return {
         "id": "issue-001",
-        "number": 1,
+        "slug": "test-issue",
         "title": "Test Issue",
-        "body": "This is a test issue",
-        "state": "open",
-        "state_reason": None,
-        "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/issues/1",
-        "html_url": "https://sourcecraft.dev/testuser/test-repo/issues/1",
-        "creator": {
-            "id": "user-123",
-            "username": "testuser",
-            "avatar_url": "https://avatars.sourcecraft.dev/u/123",
+        "description": "This is a test issue",
+        "status": {
+            "id": "status-001",
+            "slug": "open",
+            "name": "Open",
+            "status_type": "todo",
         },
-        "assignees": [],
+        "author": {
+            "id": "user-123",
+            "slug": "testuser",
+        },
+        "updated_by": None,
+        "assignee": None,
         "labels": [
             {
                 "id": "label-1",
+                "slug": "bug",
                 "name": "bug",
                 "color": "ff0000",
-                "description": "Something is broken",
-                "created_at": mock_datetime.isoformat(),
-                "updated_at": mock_datetime.isoformat(),
             }
         ],
+        "linked_prs": [],
+        "priority": "normal",
+        "visibility": "public",
         "milestone": None,
         "created_at": mock_datetime.isoformat(),
         "updated_at": mock_datetime.isoformat(),
-        "closed_at": None,
-        "comments_count": 0,
-        "locked": False,
+        "deadline": None,
+        "started_at": None,
+        "completed_at": None,
     }
 
 
 @pytest.fixture
 def mock_issue_comment_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock issue comment data."""
+    """Return mock issue comment data matching swagger schema."""
     return {
         "id": "comment-001",
         "body": "This is a test comment",
-        "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/issues/comments/1",
-        "html_url": "https://sourcecraft.dev/testuser/test-repo/issues/1#issuecomment-1",
-        "user": {
+        "parent": None,
+        "author": {
             "id": "user-123",
-            "username": "testuser",
-            "avatar_url": "https://avatars.sourcecraft.dev/u/123",
+            "slug": "testuser",
         },
+        "updated_by": None,
         "created_at": mock_datetime.isoformat(),
         "updated_at": mock_datetime.isoformat(),
-        "reactions": {"+1": 2, "-1": 0, "laugh": 1},
+        "reactions": {
+            "+1": {"count": 2},
+            "-1": {"count": 0},
+            "laugh": {"count": 1},
+        },
+        "attachments": [],
     }
 
 

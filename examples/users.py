@@ -19,17 +19,20 @@ async def get_current_user():
         try:
             user = await client.users.get_current()
             print(f"Current user: {user.username}")
-            print(f"Name: {user.name}")
-            print(f"Email: {user.email}")
+            print(f"Display Name: {user.display_name}")
             print(f"Bio: {user.bio}")
-            print(f"Location: {user.location}")
-            print(f"Public repos: {user.public_repos_count}")
-            print(f"Followers: {user.followers_count}")
-            print(f"Following: {user.following_count}")
-            if user.plan:
-                print(
-                    f"Plan: {user.plan.name} (Private repos: {user.plan.private_repos})"
-                )
+            if user.location:
+                print(f"Location: {user.location.city}, {user.location.country}")
+            if user.timezone:
+                print(f"Timezone: {user.timezone.iana_timezone}")
+            if user.workplace:
+                print(f"Company: {user.workplace.company}")
+                print(f"Position: {user.workplace.position}")
+            if user.status:
+                print(f"Status: {user.status.emoji} {user.status.message}")
+            if user.avatar:
+                print(f"Avatar: {user.avatar.url}")
+            print(f"Visibility: {user.visibility}")
 
         except APIError as e:
             print(f"Error getting current user: {e}")
@@ -48,13 +51,13 @@ async def get_user_by_username():
 
             user = await client.users.get(username)
             print(f"User: {user.username}")
-            print(f"Name: {user.name}")
+            print(f"Display Name: {user.display_name}")
             print(f"Bio: {user.bio}")
-            print(f"Company: {user.company}")
-            print(f"Location: {user.location}")
-            print(f"Public repos: {user.public_repos_count}")
-            print(f"Followers: {user.followers_count}")
-            print(f"Following: {user.following_count}")
+            if user.workplace:
+                print(f"Company: {user.workplace.company}")
+            if user.location:
+                print(f"Location: {user.location.city}, {user.location.country}")
+            print(f"Visibility: {user.visibility}")
 
         except APIError as e:
             if e.status_code == 404:
@@ -247,7 +250,7 @@ async def list_organization_members():
             print(f"Found {members.total} members in organization {org_login}:")
             for member in members.data:
                 print(f"  - {member.username}")
-                print(f"    Name: {member.name}")
+                print(f"    Display Name: {member.display_name}")
                 print()
 
         except APIError as e:

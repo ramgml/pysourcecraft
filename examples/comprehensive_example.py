@@ -12,12 +12,7 @@ from pysourcecraft.models import (
     CreatePullRequestRequest,
     CreateReleaseRequest,
     RepoVisibility,
-    IssueState,
 )
-
-
-# Demonstrate IssueState enum values
-print(f"Available issue states: {[state.value for state in IssueState]}")
 
 
 async def comprehensive_example():

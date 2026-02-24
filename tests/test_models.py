@@ -17,9 +17,13 @@ from pysourcecraft.models import (
     CreateIssueRequest,
     Issue,
     IssueFilters,
-    IssueState,
-    IssueStateReason,
+    IssueVisibility,
+    LabelEmbedded,
+    Priority,
+    ReactionCount,
+    StatusType,
     UpdateIssueRequest,
+    UserEmbedded,
     # Pull Requests
     CreatePullRequestRequest,
     MergePullRequestRequest,
@@ -177,16 +181,43 @@ class TestErrorModels:
 class TestIssueModels:
     """Tests for issue models."""
 
-    def test_issue_state_enum(self) -> None:
-        """Test issue state enum."""
-        assert IssueState.OPEN == "open"
-        assert IssueState.CLOSED == "closed"
+    def test_priority_enum(self) -> None:
+        """Test priority enum."""
+        assert Priority.LOW == "low"
+        assert Priority.NORMAL == "normal"
+        assert Priority.HIGH == "high"
+        assert Priority.CRITICAL == "critical"
 
-    def test_issue_state_reason_enum(self) -> None:
-        """Test issue state reason enum."""
-        assert IssueStateReason.COMPLETED == "completed"
-        assert IssueStateReason.NOT_PLANNED == "not_planned"
-        assert IssueStateReason.REOPENED == "reopened"
+    def test_issue_visibility_enum(self) -> None:
+        """Test issue visibility enum."""
+        assert IssueVisibility.PUBLIC == "public"
+        assert IssueVisibility.PRIVATE == "private"
+
+    def test_status_type_enum(self) -> None:
+        """Test status type enum."""
+        assert StatusType.TODO == "todo"
+        assert StatusType.IN_PROGRESS == "in_progress"
+        assert StatusType.DONE == "done"
+        assert StatusType.CANCELED == "canceled"
+
+    def test_user_embedded(self) -> None:
+        """Test user embedded model."""
+        user = UserEmbedded(id="user-123", slug="testuser")
+        assert user.id == "user-123"
+        assert user.slug == "testuser"
+
+    def test_label_embedded(self) -> None:
+        """Test label embedded model."""
+        label = LabelEmbedded(id="label-1", slug="bug", name="Bug", color="ff0000")
+        assert label.id == "label-1"
+        assert label.slug == "bug"
+        assert label.name == "Bug"
+        assert label.color == "ff0000"
+
+    def test_reaction_count(self) -> None:
+        """Test reaction count model."""
+        reaction = ReactionCount(count=5)
+        assert reaction.count == 5
 
     def test_create_issue_request(self) -> None:
         """Test create issue request validation."""
@@ -209,8 +240,8 @@ class TestIssueModels:
 
     def test_issue_filters(self) -> None:
         """Test issue filters."""
-        filters = IssueFilters(state=IssueState.OPEN, assignee_id="user-123")
-        assert filters.state == IssueState.OPEN
+        filters = IssueFilters(state="open", assignee_id="user-123")
+        assert filters.state == "open"
         assert filters.assignee_id == "user-123"
 
 
@@ -416,28 +447,36 @@ class TestModelSerialization:
     """Tests for model serialization."""
 
     def test_issue_serialization(self) -> None:
-        """Test issue serialization."""
+        """Test issue serialization with swagger schema."""
         now = datetime.now(timezone.utc)
         issue_data = {
             "id": "issue-1",
-            "number": 1,
+            "slug": "test-issue",
             "title": "Test Issue",
-            "state": "open",
-            "url": "https://api.example.com/issues/1",
-            "html_url": "https://example.com/issues/1",
-            "creator": {
-                "id": "user-1",
-                "username": "testuser",
+            "description": "Test description",
+            "status": {
+                "id": "status-1",
+                "slug": "open",
+                "name": "Open",
+                "status_type": "todo",
             },
-            "assignees": [],
+            "author": {
+                "id": "user-1",
+                "slug": "testuser",
+            },
+            "assignee": None,
             "labels": [],
+            "linked_prs": [],
+            "priority": "normal",
+            "visibility": "public",
+            "milestone": None,
             "created_at": now.isoformat(),
             "updated_at": now.isoformat(),
-            "comments_count": 0,
         }
         issue = Issue.model_validate(issue_data)
         assert issue.id == "issue-1"
-        assert issue.state == IssueState.OPEN
+        assert issue.slug == "test-issue"
+        assert issue.status.slug == "open"
 
     def test_repository_serialization(self) -> None:
         """Test repository serialization with Sourcecraft API format."""

@@ -18,8 +18,55 @@ class UserType(str, Enum):
     BOT = "Bot"
 
 
+class ProfileVisibility(str, Enum):
+    """Profile visibility enum."""
+
+    PRIVATE = "private"
+    PUBLIC = "public"
+
+
+class Location(BaseModel):
+    """User location information."""
+
+    country: str | None = Field(None, description="Country name")
+    city: str | None = Field(None, description="City name")
+
+
+class Timezone(BaseModel):
+    """User timezone information."""
+
+    iana_timezone: str | None = Field(None, description="IANA timezone identifier")
+
+
+class Workplace(BaseModel):
+    """User workplace information."""
+
+    company: str | None = Field(None, description="Company name")
+    position: str | None = Field(None, description="Job position")
+
+
+class ProfileStatus(BaseModel):
+    """User profile status."""
+
+    message: str | None = Field(None, description="Status message")
+    emoji: str | None = Field(None, description="Status emoji")
+
+
+class Image(BaseModel):
+    """Image reference."""
+
+    url: str | None = Field(None, description="Image URL")
+
+
+class Link(BaseModel):
+    """External link."""
+
+    link: str | None = Field(None, description="URL")
+    type: str | None = Field(None, description="Link type")
+
+
 class Plan(BaseModel):
-    """User/Organization plan."""
+    """User/Organization plan (kept for backward compatibility)."""
 
     name: str = Field(description="Plan name")
     space: int = Field(description="Storage space")
@@ -27,59 +74,74 @@ class Plan(BaseModel):
     collaborators: int = Field(description="Collaborators limit")
 
 
-class User(BaseModel):
-    """User model."""
+class UserEmbedded(BaseModel):
+    """Minimal user reference (embedded in other models).
+
+    Matches swagger schema UserEmbedded definition.
+    """
 
     id: str = Field(description="User ID")
-    username: str = Field(description="Username")
-    type: UserType = Field(description="User type")
+    slug: str = Field(description="User slug/username")
 
-    # Profile
-    name: str | None = Field(None, description="Display name")
-    email: str | None = Field(None, description="Public email")
-    bio: str | None = Field(None, description="Bio")
-    blog: str | None = Field(None, description="Blog URL")
-    company: str | None = Field(None, description="Company")
-    location: str | None = Field(None, description="Location")
-    hireable: bool | None = Field(None, description="Open to hire")
 
-    # URLs
-    url: str = Field(description="API URL")
-    html_url: str = Field(description="Profile URL")
-    avatar_url: str | None = Field(None, description="Avatar URL")
-    gravatar_id: str | None = Field(None, description="Gravatar ID")
+class UserProfile(BaseModel):
+    """User profile model matching the API schema.
 
-    # Timestamps
-    created_at: datetime = Field(description="Account creation timestamp")
-    updated_at: datetime = Field(description="Last update timestamp")
+    This is returned by /users/{user_slug}, /users/id:{user_id}, etc.
+    Matches swagger schema UserProfile definition.
+    """
 
-    # Social
-    twitter_username: str | None = Field(None, description="Twitter username")
-    followers_count: int = Field(default=0, ge=0, description="Followers count")
-    following_count: int = Field(default=0, ge=0, description="Following count")
+    id: str = Field(description="User ID")
+    display_name: str | None = Field(None, description="Display name")
+    username: str | None = Field(None, description="Username")
+    bio: str | None = Field(None, description="User bio")
 
-    # Stats
-    public_repos_count: int = Field(
-        default=0, ge=0, description="Public repositories count"
-    )
-    public_gists_count: int = Field(default=0, ge=0, description="Public gists count")
-    private_gists_count: int = Field(default=0, ge=0, description="Private gists count")
+    # Location and timezone
+    location: Location | None = Field(None, description="User location")
+    timezone: Timezone | None = Field(None, description="User timezone")
 
-    # Features
-    two_factor_authentication: bool | None = Field(None, description="2FA enabled")
+    # Work info
+    workplace: Workplace | None = Field(None, description="User workplace")
 
-    # Plan (for authenticated user)
-    plan: Plan | None = Field(None, description="Subscription plan")
+    # Links
+    links: list[Link] = Field(default_factory=list, description="External links")
 
-    # Site admin
-    site_admin: bool = Field(default=False, description="Is site administrator")
+    # Status
+    status: ProfileStatus | None = Field(None, description="Profile status")
+
+    # Images
+    avatar: Image | None = Field(None, description="Avatar image")
+    background_image: Image | None = Field(None, description="Background image")
+
+    # Visibility
+    visibility: ProfileVisibility | None = Field(None, description="Profile visibility")
+
+
+# For backward compatibility - User is now an alias for UserProfile
+# since the API returns UserProfile for user endpoints
+User = UserProfile
+
+
+class OrganizationEmbedded(BaseModel):
+    """Minimal organization reference (embedded in other models).
+
+    Matches swagger schema OrganizationEmbedded definition.
+    """
+
+    id: str = Field(description="Organization ID")
+    slug: str = Field(description="Organization slug")
 
 
 class Organization(BaseModel):
-    """Organization model."""
+    """Organization model.
+
+    Note: The API uses OrganizationEmbedded for most references.
+    This model provides additional organization details not fully defined
+    in the swagger schema but used by the client.
+    """
 
     id: str = Field(description="Organization ID")
-    login: str = Field(description="Organization login")
+    login: str = Field(description="Organization login/slug")
     type: UserType = Field(default=UserType.ORGANIZATION, description="Type")
 
     # Profile
@@ -91,14 +153,14 @@ class Organization(BaseModel):
     company: str | None = Field(None, description="Company name (for enterprise)")
 
     # URLs
-    url: str = Field(description="API URL")
-    html_url: str = Field(description="Profile URL")
+    url: str | None = Field(None, description="API URL")
+    html_url: str | None = Field(None, description="Profile URL")
     avatar_url: str | None = Field(None, description="Avatar URL")
     gravatar_id: str | None = Field(None, description="Gravatar ID")
 
     # Timestamps
-    created_at: datetime = Field(description="Creation timestamp")
-    updated_at: datetime = Field(description="Last update timestamp")
+    created_at: datetime | None = Field(None, description="Creation timestamp")
+    updated_at: datetime | None = Field(None, description="Last update timestamp")
 
     # Stats
     public_repos_count: int = Field(
