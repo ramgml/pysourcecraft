@@ -44,7 +44,6 @@ from pysourcecraft.models.issues import (
     IssueVisibility,
     Label,
     LabelEmbedded,
-    MilestoneEmbedded,
     Priority,
     PullRequestEmbedded,
     ReactionCount,
@@ -55,7 +54,9 @@ from pysourcecraft.models.issues import (
 from pysourcecraft.models.milestones import (
     CreateMilestoneRequest,
     Milestone,
+    MilestoneEmbedded,
     MilestoneState,
+    MilestoneStatus,
     UpdateMilestoneRequest,
 )
 from pysourcecraft.models.pull_requests import (
@@ -195,7 +196,9 @@ __all__ = [
     "RepositoryEmbedded",
     # Milestones
     "Milestone",
+    "MilestoneEmbedded",
     "MilestoneState",
+    "MilestoneStatus",
     "CreateMilestoneRequest",
     "UpdateMilestoneRequest",
     # Releases

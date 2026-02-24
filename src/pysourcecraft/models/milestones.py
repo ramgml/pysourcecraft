@@ -1,4 +1,7 @@
-"""Pydantic models for Milestones."""
+"""Pydantic models for Milestones.
+
+Matches swagger schema definitions for Milestone-related models.
+"""
 
 from __future__ import annotations
 
@@ -8,73 +11,96 @@ from enum import Enum
 from pydantic import Field
 
 from pysourcecraft.models.base import BaseModel
+from pysourcecraft.models.users import UserEmbedded
 
 
-class MilestoneState(str, Enum):
-    """Milestone state enum."""
+class MilestoneStatus(str, Enum):
+    """Milestone status enum.
+
+    Matches swagger schema Milestone.Status definition.
+    """
 
     OPEN = "open"
     CLOSED = "closed"
 
 
-class Milestone(BaseModel):
-    """Milestone model."""
+class MilestoneEmbedded(BaseModel):
+    """Minimal milestone reference (embedded in other models).
+
+    Matches swagger schema MilestoneEmbedded definition.
+    """
 
     id: str = Field(description="Milestone ID")
-    number: int = Field(description="Milestone number")
-    title: str = Field(description="Milestone title")
+    slug: str = Field(description="Milestone slug")
+
+
+class Milestone(BaseModel):
+    """Milestone model.
+
+    Matches swagger schema Milestone definition.
+    """
+
+    id: str = Field(description="Milestone ID")
+    name: str = Field(description="Milestone name")
+    slug: str = Field(description="Milestone slug")
     description: str | None = Field(None, description="Milestone description")
-    state: MilestoneState = Field(description="Milestone state")
-    url: str = Field(description="API URL")
-    html_url: str = Field(description="HTML URL")
+    start_date: datetime | None = Field(None, description="Milestone start date")
+    deadline: datetime | None = Field(None, description="Milestone deadline (end date)")
+    status: MilestoneStatus = Field(description="Milestone status")
 
-    # Creator
-    creator_id: str = Field(description="Creator user ID")
-    creator_username: str = Field(description="Creator username")
-
-    # Due date
-    due_on: datetime | None = Field(None, description="Due date")
+    # Authors
+    author: UserEmbedded = Field(description="Milestone creator")
+    updated_by: UserEmbedded | None = Field(None, description="User who last updated")
 
     # Timestamps
     created_at: datetime = Field(description="Creation timestamp")
     updated_at: datetime = Field(description="Last update timestamp")
-    closed_at: datetime | None = Field(None, description="Closed timestamp")
 
-    # Progress
-    open_issues_count: int = Field(default=0, ge=0, description="Open issues count")
-    closed_issues_count: int = Field(default=0, ge=0, description="Closed issues count")
+    # Backward compatibility property
+    @property
+    def title(self) -> str:
+        """Backward compatibility: returns name as title."""
+        return self.name
 
     @property
-    def total_issues(self) -> int:
-        """Total number of issues."""
-        return self.open_issues_count + self.closed_issues_count
+    def state(self) -> MilestoneStatus:
+        """Backward compatibility: returns status as state."""
+        return self.status
 
     @property
-    def progress_percentage(self) -> float:
-        """Completion percentage."""
-        total = self.total_issues
-        if total == 0:
-            return 0.0
-        return (self.closed_issues_count / total) * 100
+    def due_on(self) -> datetime | None:
+        """Backward compatibility: returns deadline as due_on."""
+        return self.deadline
+
+
+# Backward compatibility alias
+MilestoneState = MilestoneStatus
 
 
 class CreateMilestoneRequest(BaseModel):
-    """Request to create a milestone."""
+    """Request to create a milestone.
 
-    title: str = Field(min_length=1, max_length=255, description="Milestone title")
-    description: str | None = Field(None, description="Milestone description")
-    state: MilestoneState = Field(
-        default=MilestoneState.OPEN, description="Milestone state"
+    Matches swagger schema CreateMilestoneBody definition.
+    """
+
+    name: str = Field(min_length=1, description="Milestone name")
+    slug: str | None = Field(
+        None, description="Optional slug (auto-generated from name if not provided)"
     )
-    due_on: datetime | None = Field(None, description="Due date")
+    description: str | None = Field(None, description="Milestone description")
+    start_date: datetime | None = Field(None, description="Milestone start date")
+    deadline: datetime | None = Field(None, description="Milestone deadline (end date)")
 
 
 class UpdateMilestoneRequest(BaseModel):
-    """Request to update a milestone."""
+    """Request to update a milestone.
 
-    title: str | None = Field(
-        None, min_length=1, max_length=255, description="Milestone title"
-    )
+    Matches swagger schema UpdateMilestoneBody definition.
+    """
+
+    name: str | None = Field(None, description="Milestone name")
+    slug: str | None = Field(None, description="Milestone slug")
     description: str | None = Field(None, description="Milestone description")
-    state: MilestoneState | None = Field(None, description="Milestone state")
-    due_on: datetime | None = Field(None, description="Due date")
+    start_date: datetime | None = Field(None, description="Milestone start date")
+    deadline: datetime | None = Field(None, description="Milestone deadline (end date)")
+    status: MilestoneStatus | None = Field(None, description="Milestone status")

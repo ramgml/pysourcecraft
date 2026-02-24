@@ -8,6 +8,7 @@ from enum import Enum
 from pydantic import Field
 
 from pysourcecraft.models.base import BaseModel
+from pysourcecraft.models.milestones import MilestoneEmbedded
 
 
 class Priority(str, Enum):
@@ -71,13 +72,6 @@ class Label(BaseModel):
     updated_by: UserEmbedded = Field(description="User who last updated the label")
     created_at: datetime = Field(description="Creation timestamp")
     updated_at: datetime = Field(description="Last update timestamp")
-
-
-class MilestoneEmbedded(BaseModel):
-    """Embedded milestone reference."""
-
-    id: str = Field(description="Milestone ID")
-    slug: str = Field(description="Milestone slug")
 
 
 class PullRequestEmbedded(BaseModel):
