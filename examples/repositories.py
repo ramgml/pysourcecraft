@@ -5,7 +5,10 @@ Repositories API usage examples.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
+
+load_dotenv()
 from pysourcecraft.models import CreateRepositoryRequest, UpdateRepositoryRequest, RepoVisibility
 
 

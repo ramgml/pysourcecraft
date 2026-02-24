@@ -53,7 +53,7 @@ class TestRepositoriesClientList:
     ) -> None:
         """Test listing repositories for the authenticated user."""
         response_data = create_paginated_response([mock_repository_data], total=1)
-        mock_router.get("https://api.sourcecraft.dev/v1/user/repos").mock(
+        mock_router.get("https://api.sourcecraft.dev/v1/repos").mock(
             return_value=Response(200, json=response_data)
         )
 
@@ -116,7 +116,7 @@ class TestRepositoriesClientCreate:
         mock_repository_data: dict[str, Any],
     ) -> None:
         """Test creating a new repository."""
-        mock_router.post("https://api.sourcecraft.dev/v1/user/repos").mock(
+        mock_router.post("https://api.sourcecraft.dev/v1/repos").mock(
             return_value=Response(201, json=mock_repository_data)
         )
 

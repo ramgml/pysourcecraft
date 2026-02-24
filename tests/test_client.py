@@ -21,7 +21,7 @@ class TestClientInitialization:
         client = SourceCraftClient(api_token="test-token")
 
         assert client.api_token == "test-token"
-        assert client.base_url == "https://api.sourcecraft.dev/v1"
+        assert client.base_url == "https://api.sourcecraft.tech"
         assert client.timeout == 30.0
         assert client._client is None
 
@@ -30,7 +30,7 @@ class TestClientInitialization:
         client = SourceCraftClient(api_token=None)
 
         assert client.api_token is None
-        assert client.base_url == "https://api.sourcecraft.dev/v1"
+        assert client.base_url == "https://api.sourcecraft.tech"
 
     def test_client_init_custom_base_url(self) -> None:
         """Test client initialization with custom base URL."""

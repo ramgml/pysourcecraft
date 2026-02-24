@@ -22,7 +22,7 @@ class SourceCraftClient:
     def __init__(
         self,
         api_token: str | None = None,
-        base_url: str = "https://api.sourcecraft.dev/v1",
+        base_url: str = "https://api.sourcecraft.tech",
         timeout: float = 30.0,
     ):
         """Initialize the client.
@@ -85,6 +85,19 @@ class SourceCraftClient:
         try:
             response = await self.client.request(method, path, **kwargs)
             response.raise_for_status()
+
+            # Validate Content-Type before parsing JSON
+            content_type = response.headers.get("content-type", "")
+            if "application/json" not in content_type:
+                body_preview = response.text[:500]
+                raise APIError(
+                    message=(
+                        f"Expected JSON response, but received '{content_type}'. "
+                        f"HTTP {response.status_code}: {body_preview}"
+                    ),
+                    status_code=response.status_code,
+                )
+
             return response.json()
         except httpx.HTTPStatusError as e:
             error_response = None

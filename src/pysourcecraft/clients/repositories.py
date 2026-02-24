@@ -37,7 +37,7 @@ class RepositoriesClient(BaseResourceClient):
         if username:
             data = await self._get(f"/users/{username}/repos", params=params)
         else:
-            data = await self._get("/user/repos", params=params)
+            data = await self._get("/repos", params=params)
 
         return PaginatedResponse[Repository].model_validate(data)
 
@@ -84,7 +84,7 @@ class RepositoriesClient(BaseResourceClient):
             Created repository
         """
         data = await self._post(
-            "/user/repos",
+            "/repos",
             json=request.model_dump(exclude_none=True),
         )
         return Repository.model_validate(data)
