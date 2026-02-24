@@ -10,7 +10,7 @@ from httpx import Response
 
 from pysourcecraft.client import SourceCraftClient
 from pysourcecraft.models import (
-    Artifact,
+    LegacyArtifact,
     PaginatedResponse,
     Pipeline,
     PipelineStatus,
@@ -369,7 +369,7 @@ class TestCICDClientArtifacts:
 
         result = await client.cicd.get_artifact("testuser", "test-repo", "artifact-001")
 
-        assert isinstance(result, Artifact)
+        assert isinstance(result, LegacyArtifact)
         assert result.id == "artifact-001"
 
     @pytest.mark.asyncio

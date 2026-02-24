@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pysourcecraft.clients.base import BaseResourceClient
 from pysourcecraft.models import (
-    Artifact,
+    LegacyArtifact,
     PaginatedResponse,
     Pipeline,
     Workflow,
@@ -221,7 +221,7 @@ class CICDClient(BaseResourceClient):
         run_id: str | None = None,
         page: int = 1,
         per_page: int = 30,
-    ) -> PaginatedResponse[Artifact]:
+    ) -> PaginatedResponse[LegacyArtifact]:
         """List artifacts.
 
         Args:
@@ -247,9 +247,11 @@ class CICDClient(BaseResourceClient):
                 params=params,
             )
 
-        return PaginatedResponse[Artifact].model_validate(data)
+        return PaginatedResponse[LegacyArtifact].model_validate(data)
 
-    async def get_artifact(self, owner: str, repo: str, artifact_id: str) -> Artifact:
+    async def get_artifact(
+        self, owner: str, repo: str, artifact_id: str
+    ) -> LegacyArtifact:
         """Get a single artifact.
 
         Args:
@@ -261,7 +263,7 @@ class CICDClient(BaseResourceClient):
             Artifact details
         """
         data = await self._get(f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}")
-        return Artifact.model_validate(data)
+        return LegacyArtifact.model_validate(data)
 
     async def delete_artifact(self, owner: str, repo: str, artifact_id: str) -> None:
         """Delete an artifact.

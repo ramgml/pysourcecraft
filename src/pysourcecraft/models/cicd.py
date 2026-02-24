@@ -10,6 +10,11 @@ from pydantic import Field
 from pysourcecraft.models.base import BaseModel
 
 
+# =============================================================================
+# Enums
+# =============================================================================
+
+
 class WorkflowState(str, Enum):
     """Workflow run state enum."""
 
@@ -55,8 +60,172 @@ class PipelineStatus(str, Enum):
     SKIPPED = "skipped"
 
 
+class RunStatus(str, Enum):
+    """CI/CD run status enum (from swagger)."""
+
+    CREATED = "created"
+    PREPARED = "prepared"
+    PROCESSING = "processing"
+    SUCCESS = "success"
+    FAILED = "failed"
+    CANCELED = "canceled"
+    TIMEOUT = "timeout"
+
+
+class ArtifactStatus(str, Enum):
+    """Artifact status enum (from swagger)."""
+
+    REGISTERED = "registered"
+    SUCCESS = "success"
+    FAILED = "failed"
+    MISSING = "missing"
+
+
+# =============================================================================
+# Supporting Models
+# =============================================================================
+
+
+class DatesByStage(BaseModel):
+    """Dates for CI/CD entities by stage (from swagger)."""
+
+    created_at: datetime | None = Field(None, description="Creation timestamp")
+    started_at: datetime | None = Field(None, description="Start timestamp")
+    finished_at: datetime | None = Field(None, description="Finish timestamp")
+    updated_at: datetime | None = Field(None, description="Last update timestamp")
+
+
+class ArtifactDates(BaseModel):
+    """Dates for artifacts (from swagger)."""
+
+    registered_at: datetime | None = Field(None, description="Registration timestamp")
+    obtained_at: datetime | None = Field(None, description="Acquisition timestamp")
+    updated_at: datetime | None = Field(None, description="Last update timestamp")
+
+
+class Dependency(BaseModel):
+    """Dependency reference (from swagger)."""
+
+    name: str = Field(description="Dependency name")
+
+
+class Relations(BaseModel):
+    """Entity relations (from swagger)."""
+
+    needs: list[Dependency] = Field(default_factory=list, description="Dependencies")
+
+
+# =============================================================================
+# Main CI/CD Models (Swagger-Compliant)
+# =============================================================================
+
+
+class Artifact(BaseModel):
+    """CI/CD artifact model (matches swagger schema).
+
+    Note: This model has been updated to match the swagger schema.
+    The swagger Artifact has: id, local_path, dates, status, download_url
+    """
+
+    id: str = Field(description="Artifact ID")
+    local_path: str = Field(description="Local path as defined in CI config")
+    dates: ArtifactDates = Field(description="Artifact dates")
+    status: ArtifactStatus = Field(description="Artifact status")
+    download_url: str = Field(description="Temporary download URL")
+
+
+class Cube(BaseModel):
+    """Cube model - execution unit within a task (from swagger)."""
+
+    id: str = Field(description="Cube ID")
+    slug: str = Field(description="Cube name as defined in config")
+    dates: DatesByStage = Field(description="Cube dates")
+    status: RunStatus = Field(description="Cube status")
+    artifacts: list[Artifact] = Field(
+        default_factory=list, description="Cube artifacts"
+    )
+    relations: Relations | None = Field(None, description="Cube relations")
+
+
+class Task(BaseModel):
+    """Task model - unit of work within a workflow (from swagger)."""
+
+    id: str = Field(description="Task ID")
+    slug: str = Field(description="Task name as defined in config")
+    description: str | None = Field(None, description="Task description")
+    dates: DatesByStage = Field(description="Task dates")
+    status: RunStatus = Field(description="Task status")
+    cubes: list[Cube] = Field(default_factory=list, description="Task cubes")
+    progress: dict | None = Field(None, description="Task progress")
+    relations: Relations | None = Field(None, description="Task relations")
+
+
+class CIWorkflow(BaseModel):
+    """CI/CD Workflow model (matches swagger schema for Run workflows).
+
+    Note: This is the swagger-compliant Workflow used within Run entities.
+    It has: id, slug, description, dates, status, tasks, progress
+    """
+
+    id: str = Field(description="Workflow ID")
+    slug: str = Field(description="Workflow name as defined in config")
+    description: str | None = Field(None, description="Workflow description")
+    dates: DatesByStage = Field(description="Workflow dates")
+    status: RunStatus = Field(description="Workflow status")
+    tasks: list[Task] = Field(default_factory=list, description="Workflow tasks")
+    progress: dict | None = Field(None, description="Workflow progress")
+
+
+class Workflow(BaseModel):
+    """Workflow definition model (GitHub-style, for repository workflows).
+
+    Note: This model is used for the /repos/{owner}/{repo}/workflows endpoint
+    which returns GitHub-style workflow definitions, not CI run workflows.
+    """
+
+    id: str = Field(description="Workflow ID")
+    name: str = Field(description="Workflow name")
+    path: str = Field(description="File path")
+    state: str = Field(description="Workflow state (active/disabled)")
+    url: str = Field(description="API URL")
+    html_url: str = Field(description="HTML URL")
+    badge_url: str | None = Field(None, description="Status badge URL")
+    created_at: datetime = Field(description="Creation timestamp")
+    updated_at: datetime = Field(description="Last update timestamp")
+
+
+class Run(BaseModel):
+    """Run model - main CI/CD run entity (from swagger).
+
+    This is the primary CI/CD entity that contains workflows.
+    """
+
+    id: str = Field(description="Run ID")
+    slug: str = Field(description="Run counter as slug")
+    dates: DatesByStage = Field(description="Run dates")
+    status: RunStatus = Field(description="Run status")
+    workflows: list[CIWorkflow] = Field(
+        default_factory=list, description="Run workflows"
+    )
+    event_type: str | None = Field(None, description="Event that triggered this run")
+    error_messages: list[str] = Field(
+        default_factory=list, description="Error messages"
+    )
+    pull: dict | None = Field(None, description="Pull request that triggered this run")
+    user: dict | None = Field(None, description="User that triggered this run")
+
+
+# =============================================================================
+# Legacy Models (for backward compatibility)
+# =============================================================================
+
+
 class WorkflowRun(BaseModel):
-    """Workflow run model."""
+    """Workflow run model (GitHub-style, legacy).
+
+    Note: This model is maintained for backward compatibility.
+    The swagger schema uses Run as the main CI/CD entity.
+    """
 
     id: str = Field(description="Run ID")
     name: str = Field(description="Workflow name")
@@ -118,8 +287,20 @@ class WorkflowRun(BaseModel):
     display_title: str = Field(description="Display title")
 
 
+class WorkflowJobStep(BaseModel):
+    """Workflow job step model (legacy)."""
+
+    name: str = Field(description="Step name")
+    state: WorkflowState = Field(description="Step state")
+    conclusion: WorkflowConclusion | None = Field(None, description="Step conclusion")
+    number: int = Field(description="Step number")
+    started_at: datetime | None = Field(None, description="Start timestamp")
+    completed_at: datetime | None = Field(None, description="Completion timestamp")
+    duration_seconds: int | None = Field(None, ge=0, description="Step duration")
+
+
 class WorkflowJob(BaseModel):
-    """Workflow job model."""
+    """Workflow job model (legacy)."""
 
     id: str = Field(description="Job ID")
     run_id: str = Field(description="Workflow run ID")
@@ -150,34 +331,76 @@ class WorkflowJob(BaseModel):
     completed_at: datetime | None = Field(None, description="Completion timestamp")
 
 
-class WorkflowJobStep(BaseModel):
-    """Workflow job step model."""
+class PipelineStage(BaseModel):
+    """Pipeline stage model (legacy)."""
 
-    name: str = Field(description="Step name")
-    state: WorkflowState = Field(description="Step state")
-    conclusion: WorkflowConclusion | None = Field(None, description="Step conclusion")
-    number: int = Field(description="Step number")
+    id: str = Field(description="Stage ID")
+    name: str = Field(description="Stage name")
+    status: PipelineStatus = Field(description="Stage status")
+    jobs: list[PipelineJob] = Field(default_factory=list, description="Stage jobs")
+    created_at: datetime = Field(description="Creation timestamp")
     started_at: datetime | None = Field(None, description="Start timestamp")
-    completed_at: datetime | None = Field(None, description="Completion timestamp")
-    duration_seconds: int | None = Field(None, ge=0, description="Step duration")
+    finished_at: datetime | None = Field(None, description="Finish timestamp")
+    duration_seconds: int | None = Field(None, ge=0, description="Duration")
 
 
-class Workflow(BaseModel):
-    """Workflow definition model."""
+class PipelineJob(BaseModel):
+    """Pipeline job model (legacy)."""
 
-    id: str = Field(description="Workflow ID")
-    name: str = Field(description="Workflow name")
-    path: str = Field(description="File path")
-    state: str = Field(description="Workflow state (active/disabled)")
+    id: str = Field(description="Job ID")
+    name: str = Field(description="Job name")
+    status: PipelineStatus = Field(description="Job status")
+    stage: str = Field(description="Stage name")
     url: str = Field(description="API URL")
-    html_url: str = Field(description="HTML URL")
-    badge_url: str | None = Field(None, description="Status badge URL")
+    web_url: str = Field(description="Web URL")
+
+    # Runner
+    runner_id: str | None = Field(None, description="Runner ID")
+    runner_name: str | None = Field(None, description="Runner name")
+
+    # Timestamps
+    created_at: datetime = Field(description="Creation timestamp")
+    started_at: datetime | None = Field(None, description="Start timestamp")
+    finished_at: datetime | None = Field(None, description="Finish timestamp")
+    duration_seconds: int | None = Field(None, ge=0, description="Duration")
+
+    # Artifacts - using legacy format for backward compatibility
+    artifacts: list[LegacyArtifact] = Field(
+        default_factory=list, description="Job artifacts"
+    )
+
+    # Coverage
+    coverage: float | None = Field(None, ge=0, le=100, description="Test coverage")
+
+    # Failure
+    failure_reason: str | None = Field(None, description="Failure reason")
+    allow_failure: bool = Field(default=False, description="Allowed to fail")
+
+
+class LegacyArtifact(BaseModel):
+    """Legacy artifact model (GitHub-style, for backward compatibility).
+
+    Note: This is the old artifact format. New code should use Artifact.
+    """
+
+    id: str = Field(description="Artifact ID")
+    name: str = Field(description="Artifact name")
+    size_in_bytes: int = Field(ge=0, description="Size in bytes")
+    url: str = Field(description="API URL")
+    archive_download_url: str = Field(description="Download URL")
+    expired: bool = Field(default=False, description="Whether artifact expired")
+    expires_at: datetime | None = Field(None, description="Expiration timestamp")
     created_at: datetime = Field(description="Creation timestamp")
     updated_at: datetime = Field(description="Last update timestamp")
 
 
 class Pipeline(BaseModel):
-    """Pipeline model (CI/CD pipeline)."""
+    """Pipeline model (legacy).
+
+    Note: This model is NOT in the swagger schema. The swagger schema
+    uses Run as the main CI/CD entity. This is maintained for backward
+    compatibility with existing endpoints.
+    """
 
     id: str = Field(description="Pipeline ID")
     name: str = Field(description="Pipeline name")
@@ -211,61 +434,3 @@ class Pipeline(BaseModel):
     coverage: float | None = Field(
         None, ge=0, le=100, description="Test coverage percentage"
     )
-
-
-class PipelineStage(BaseModel):
-    """Pipeline stage model."""
-
-    id: str = Field(description="Stage ID")
-    name: str = Field(description="Stage name")
-    status: PipelineStatus = Field(description="Stage status")
-    jobs: list[PipelineJob] = Field(default_factory=list, description="Stage jobs")
-    created_at: datetime = Field(description="Creation timestamp")
-    started_at: datetime | None = Field(None, description="Start timestamp")
-    finished_at: datetime | None = Field(None, description="Finish timestamp")
-    duration_seconds: int | None = Field(None, ge=0, description="Duration")
-
-
-class PipelineJob(BaseModel):
-    """Pipeline job model."""
-
-    id: str = Field(description="Job ID")
-    name: str = Field(description="Job name")
-    status: PipelineStatus = Field(description="Job status")
-    stage: str = Field(description="Stage name")
-    url: str = Field(description="API URL")
-    web_url: str = Field(description="Web URL")
-
-    # Runner
-    runner_id: str | None = Field(None, description="Runner ID")
-    runner_name: str | None = Field(None, description="Runner name")
-
-    # Timestamps
-    created_at: datetime = Field(description="Creation timestamp")
-    started_at: datetime | None = Field(None, description="Start timestamp")
-    finished_at: datetime | None = Field(None, description="Finish timestamp")
-    duration_seconds: int | None = Field(None, ge=0, description="Duration")
-
-    # Artifacts
-    artifacts: list[Artifact] = Field(default_factory=list, description="Job artifacts")
-
-    # Coverage
-    coverage: float | None = Field(None, ge=0, le=100, description="Test coverage")
-
-    # Failure
-    failure_reason: str | None = Field(None, description="Failure reason")
-    allow_failure: bool = Field(default=False, description="Allowed to fail")
-
-
-class Artifact(BaseModel):
-    """CI/CD artifact model."""
-
-    id: str = Field(description="Artifact ID")
-    name: str = Field(description="Artifact name")
-    size_in_bytes: int = Field(ge=0, description="Size in bytes")
-    url: str = Field(description="API URL")
-    archive_download_url: str = Field(description="Download URL")
-    expired: bool = Field(default=False, description="Whether artifact expired")
-    expires_at: datetime | None = Field(None, description="Expiration timestamp")
-    created_at: datetime = Field(description="Creation timestamp")
-    updated_at: datetime = Field(description="Last update timestamp")

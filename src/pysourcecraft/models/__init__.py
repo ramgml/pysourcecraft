@@ -9,10 +9,21 @@ from pysourcecraft.models.base import (
 )
 from pysourcecraft.models.cicd import (
     Artifact,
+    ArtifactDates,
+    ArtifactStatus,
+    CIWorkflow,
+    Cube,
+    DatesByStage,
+    Dependency,
+    LegacyArtifact,
     Pipeline,
     PipelineJob,
     PipelineStage,
     PipelineStatus,
+    Relations,
+    Run,
+    RunStatus,
+    Task,
     Workflow,
     WorkflowConclusion,
     WorkflowEvent,
@@ -200,7 +211,7 @@ __all__ = [
     "Plan",
     "Organization",
     "OrgMembership",
-    # CI/CD
+    # CI/CD - Legacy Models
     "WorkflowRun",
     "WorkflowState",
     "WorkflowConclusion",
@@ -212,5 +223,17 @@ __all__ = [
     "PipelineStatus",
     "PipelineStage",
     "PipelineJob",
+    "LegacyArtifact",
+    # CI/CD - Swagger-Compliant Models
+    "Run",
+    "RunStatus",
+    "CIWorkflow",
+    "Task",
+    "Cube",
     "Artifact",
+    "ArtifactDates",
+    "ArtifactStatus",
+    "DatesByStage",
+    "Dependency",
+    "Relations",
 ]
