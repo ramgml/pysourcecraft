@@ -1,0 +1,17 @@
+[project]
+name = "pysourcecraft"
+version = "0.1.0"
+description = "SourceCraft API-client"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.2",
+    "ty>=0.0.18",
+]
+[tool.ruff]
+cache-dir = ".cache"
