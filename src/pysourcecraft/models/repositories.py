@@ -28,6 +28,80 @@ class RepoPermission(str, Enum):
     MAINTAIN = "maintain"
 
 
+class RepoTemplate(str, Enum):
+    """Repository template type enum."""
+
+    NOT_A_TEMPLATE = "not_a_template"
+    ORGANIZATIONAL = "organizational"
+    SYSTEM = "system"
+
+
+class CloneURL(BaseModel):
+    """Clone URL with HTTPS and SSH variants."""
+
+    https: str = Field(description="HTTPS clone URL")
+    ssh: str | None = Field(None, description="SSH clone URL")
+
+
+class Language(BaseModel):
+    """Programming language with name and color."""
+
+    name: str = Field(description="Language name")
+    color: str | None = Field(None, description="Language color hex code")
+
+
+class RepositoryCounters(BaseModel):
+    """Repository counters for various metrics.
+
+    Note: API returns these as strings to handle large numbers.
+    """
+
+    forks: str | None = Field(None, description="Number of forks")
+    pull_requests: str | None = Field(None, description="Number of pull requests")
+    issues: str | None = Field(None, description="Number of issues")
+    tags: str | None = Field(None, description="Number of tags")
+    branches: str | None = Field(None, description="Number of branches")
+
+
+class Image(BaseModel):
+    """Image reference with URL and optional dimensions."""
+
+    url: str = Field(description="Image URL")
+    width: int | None = Field(None, description="Image width in pixels")
+    height: int | None = Field(None, description="Image height in pixels")
+
+
+class LinkType(str, Enum):
+    """Link type enum."""
+
+    SOCIAL_NETWORK = "social_network"
+    HOMEPAGE = "homepage"
+    EMAIL = "email"
+    TELEGRAM = "telegram"
+    DEFAULT = "default"
+
+
+class Link(BaseModel):
+    """Link with type and URL."""
+
+    link: str = Field(description="Link URL")
+    type: LinkType | None = Field(None, description="Link type")
+
+
+class OrganizationEmbedded(BaseModel):
+    """Embedded organization reference (minimal)."""
+
+    id: str = Field(description="Organization ID")
+    slug: str = Field(description="Organization slug")
+
+
+class RepositoryEmbedded(BaseModel):
+    """Embedded repository reference (minimal)."""
+
+    id: str = Field(description="Repository ID")
+    slug: str = Field(description="Repository slug")
+
+
 class RepoLanguage(BaseModel):
     """Repository language stats."""
 
@@ -56,32 +130,66 @@ class RepoLicense(BaseModel):
 
 
 class Repository(BaseModel):
-    """Repository model."""
+    """Repository model matching Sourcecraft API response."""
 
+    # Core identifiers
     id: str = Field(description="Repository ID")
     name: str = Field(description="Repository name")
-    full_name: str = Field(description="Full repository name (owner/repo)")
-    description: str | None = Field(None, description="Repository description")
-    url: str = Field(description="API URL")
-    html_url: str = Field(description="HTML URL")
-    clone_url: str = Field(description="Git clone URL")
-    ssh_url: str | None = Field(None, description="SSH clone URL")
+    slug: str | None = Field(None, description="Repository slug")
 
-    # Owner
-    owner: RepoOwner = Field(description="Repository owner")
+    # Optional GitHub-style fields (not present in Sourcecraft API)
+    full_name: str | None = Field(None, description="Full repository name (owner/repo)")
+    description: str | None = Field(None, description="Repository description")
+    url: str | None = Field(None, description="API URL")
+    html_url: str | None = Field(None, description="HTML URL")
+
+    # Clone URLs - Sourcecraft API returns object with https/ssh
+    clone_url: CloneURL | None = Field(None, description="Clone URLs")
+    ssh_url: str | None = Field(None, description="SSH clone URL (legacy)")
+
+    # Owner (optional, may not be present in Sourcecraft API)
+    owner: RepoOwner | None = Field(None, description="Repository owner")
+
+    # Organization (Sourcecraft specific)
+    organization: OrganizationEmbedded | None = Field(None, description="Organization")
+
+    # Parent repository (for forks)
+    parent: RepositoryEmbedded | None = Field(
+        None, description="Fork parent repository (if fork)"
+    )
 
     # Visibility
     visibility: RepoVisibility = Field(description="Repository visibility")
-    private: bool = Field(description="Whether repository is private")
+    private: bool | None = Field(None, description="Whether repository is private")
+
+    # Template type (Sourcecraft specific)
+    template_type: RepoTemplate | None = Field(
+        None, description="Repository template type"
+    )
 
     # Default branch
     default_branch: str = Field(description="Default branch name")
 
-    # URLs
+    # URLs (Sourcecraft specific)
+    web_url: str | None = Field(None, description="Web URL")
     homepage: str | None = Field(None, description="Homepage URL")
     wiki_url: str | None = Field(None, description="Wiki URL")
     issues_url: str | None = Field(None, description="Issues URL")
     pulls_url: str | None = Field(None, description="Pull requests URL")
+
+    # Empty repository flag (Sourcecraft specific)
+    is_empty: bool | None = Field(None, description="Whether repository is empty")
+
+    # Logo (Sourcecraft specific)
+    logo: Image | None = Field(None, description="Repository logo")
+
+    # Links (Sourcecraft specific)
+    links: list[Link] = Field(default_factory=list, description="Repository links")
+
+    # Counters (Sourcecraft specific - nested object)
+    counters: RepositoryCounters | None = Field(
+        None, description="Repository counters (forks, issues, etc.)"
+    )
 
     # Features
     has_issues: bool = Field(default=True, description="Issues enabled")
@@ -117,21 +225,26 @@ class Repository(BaseModel):
     # License
     license: RepoLicense | None = Field(None, description="License information")
 
-    # Language
-    language: str | None = Field(None, description="Primary language")
+    # Language - Sourcecraft API returns object with name/color
+    language: Language | None = Field(None, description="Primary language")
     languages: list[RepoLanguage] = Field(
         default_factory=list, description="Language breakdown"
     )
 
     # Timestamps
-    created_at: datetime = Field(description="Creation timestamp")
-    updated_at: datetime = Field(description="Last update timestamp")
+    created_at: datetime | None = Field(None, description="Creation timestamp")
+    updated_at: datetime | None = Field(None, description="Last update timestamp")
     pushed_at: datetime | None = Field(None, description="Last push timestamp")
+    last_updated: datetime | None = Field(
+        None, description="Last updated timestamp (Sourcecraft specific)"
+    )
 
     # Fork info
     fork: bool = Field(default=False, description="Whether this is a fork")
     parent_id: str | None = Field(None, description="Parent repository ID (if fork)")
-    forks_count: int = Field(default=0, ge=0, description="Number of forks")
+
+    # Counts (legacy - prefer counters field)
+    forks_count: int | None = Field(None, ge=0, description="Number of forks")
 
     # Counts
     stargazers_count: int = Field(default=0, ge=0, description="Number of stars")
@@ -198,6 +311,16 @@ class UpdateRepositoryRequest(BaseModel):
     allow_squash_merge: bool | None = Field(None, description="Allow squash merge")
     allow_merge_commit: bool | None = Field(None, description="Allow merge commit")
     allow_rebase_merge: bool | None = Field(None, description="Allow rebase merge")
+    archived: bool | None = Field(None, description="Archive/unarchive repository")
+
+
+class ListOrganizationRepositoriesResponse(BaseModel):
+    """Response for listing organization repositories."""
+
+    repositories: list[Repository] = Field(description="List of repositories")
+    next_page_token: str | None = Field(
+        None, description="Token to retrieve the next page"
+    )
     delete_branch_on_merge: bool | None = Field(
         None, description="Delete branch on merge"
     )

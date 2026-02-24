@@ -18,7 +18,6 @@ from pysourcecraft.models import (
     WorkflowRun,
     WorkflowState,
     WorkflowConclusion,
-    WorkflowEvent,
 )
 
 from tests.conftest import create_paginated_response

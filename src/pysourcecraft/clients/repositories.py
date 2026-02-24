@@ -5,6 +5,7 @@ from __future__ import annotations
 from pysourcecraft.clients.base import BaseResourceClient
 from pysourcecraft.models import (
     CreateRepositoryRequest,
+    ListOrganizationRepositoriesResponse,
     PaginatedResponse,
     RepoBranch,
     RepoTag,
@@ -21,7 +22,7 @@ class RepositoriesClient(BaseResourceClient):
         username: str | None = None,
         page: int = 1,
         per_page: int = 30,
-    ) -> PaginatedResponse[Repository]:
+    ) -> ListOrganizationRepositoriesResponse:
         """List repositories.
 
         Args:
@@ -30,7 +31,7 @@ class RepositoriesClient(BaseResourceClient):
             per_page: Items per page
 
         Returns:
-            Paginated list of repositories
+            List of repositories with next page token
         """
         params = self._paginated_params(page=page, per_page=per_page)
 
@@ -39,14 +40,14 @@ class RepositoriesClient(BaseResourceClient):
         else:
             data = await self._get("/repos", params=params)
 
-        return PaginatedResponse[Repository].model_validate(data)
+        return ListOrganizationRepositoriesResponse.model_validate(data)
 
     async def list_org_repos(
         self,
         org: str,
         page: int = 1,
         per_page: int = 30,
-    ) -> PaginatedResponse[Repository]:
+    ) -> ListOrganizationRepositoriesResponse:
         """List organization repositories.
 
         Args:
@@ -55,11 +56,11 @@ class RepositoriesClient(BaseResourceClient):
             per_page: Items per page
 
         Returns:
-            Paginated list of repositories
+            List of organization repositories with pagination token
         """
         params = self._paginated_params(page=page, per_page=per_page)
         data = await self._get(f"/orgs/{org}/repos", params=params)
-        return PaginatedResponse[Repository].model_validate(data)
+        return ListOrganizationRepositoriesResponse.model_validate(data)
 
     async def get(self, owner: str, repo: str) -> Repository:
         """Get a single repository.

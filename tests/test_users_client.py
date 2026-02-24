@@ -13,7 +13,6 @@ from pysourcecraft.models import (
     OrgMembership,
     Organization,
     PaginatedResponse,
-    Repository,
     User,
     UserType,
 )

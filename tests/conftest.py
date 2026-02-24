@@ -9,27 +9,8 @@ from typing import Any
 import pytest
 import pytest_asyncio
 import respx
-from httpx import Response
 
 from pysourcecraft.client import SourceCraftClient
-from pysourcecraft.models import (
-    Issue,
-    IssueState,
-    IssueStateReason,
-    PullRequest,
-    PRState,
-    Repository,
-    RepoVisibility,
-    Release,
-    ReleaseState,
-    User,
-    UserType,
-    WorkflowRun,
-    WorkflowState,
-    WorkflowEvent,
-    Pipeline,
-    PipelineStatus,
-)
 
 
 # =============================================================================
@@ -147,15 +128,20 @@ def mock_organization_data(mock_datetime: datetime) -> dict[str, Any]:
 
 @pytest.fixture
 def mock_repository_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock repository data."""
+    """Return mock repository data matching Sourcecraft API response."""
     return {
         "id": "repo-789",
         "name": "test-repo",
+        "slug": "test-repo",
         "full_name": "testuser/test-repo",
         "description": "A test repository",
         "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo",
         "html_url": "https://sourcecraft.dev/testuser/test-repo",
-        "clone_url": "https://sourcecraft.dev/testuser/test-repo.git",
+        "web_url": "https://sourcecraft.dev/testuser/test-repo",
+        "clone_url": {
+            "https": "https://sourcecraft.dev/testuser/test-repo.git",
+            "ssh": "git@sourcecraft.dev:testuser/test-repo.git",
+        },
         "ssh_url": "git@sourcecraft.dev:testuser/test-repo.git",
         "owner": {
             "id": "user-123",
@@ -164,13 +150,34 @@ def mock_repository_data(mock_datetime: datetime) -> dict[str, Any]:
             "avatar_url": "https://avatars.sourcecraft.dev/u/123",
             "html_url": "https://sourcecraft.dev/testuser",
         },
+        "organization": {
+            "id": "org-456",
+            "slug": "testorg",
+        },
         "visibility": "public",
         "private": False,
+        "is_empty": False,
+        "template_type": "not_a_template",
         "default_branch": "main",
         "homepage": "https://test-repo.example.com",
         "wiki_url": "https://sourcecraft.dev/testuser/test-repo/wiki",
         "issues_url": "https://sourcecraft.dev/testuser/test-repo/issues",
         "pulls_url": "https://sourcecraft.dev/testuser/test-repo/pulls",
+        "logo": {
+            "url": "https://sourcecraft.dev/testuser/test-repo/logo.png",
+            "width": 128,
+            "height": 128,
+        },
+        "links": [
+            {"link": "https://test-repo.example.com", "type": "homepage"},
+        ],
+        "counters": {
+            "forks": "10",
+            "issues": "5",
+            "pull_requests": "3",
+            "tags": "12",
+            "branches": "8",
+        },
         "has_issues": True,
         "has_projects": True,
         "has_wiki": True,
@@ -192,7 +199,10 @@ def mock_repository_data(mock_datetime: datetime) -> dict[str, Any]:
             "spdx_id": "MIT",
             "url": "https://api.sourcecraft.dev/v1/licenses/mit",
         },
-        "language": "Python",
+        "language": {
+            "name": "Python",
+            "color": "#3572A5",
+        },
         "languages": [
             {"name": "Python", "bytes_count": 50000, "percentage": 80.0},
             {"name": "JavaScript", "bytes_count": 12500, "percentage": 20.0},
@@ -200,7 +210,9 @@ def mock_repository_data(mock_datetime: datetime) -> dict[str, Any]:
         "created_at": mock_datetime.isoformat(),
         "updated_at": mock_datetime.isoformat(),
         "pushed_at": mock_datetime.isoformat(),
+        "last_updated": mock_datetime.isoformat(),
         "fork": False,
+        "parent": None,
         "parent_id": None,
         "forks_count": 10,
         "stargazers_count": 50,

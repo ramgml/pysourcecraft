@@ -15,7 +15,7 @@ async def token_authentication():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             # Test authentication by getting current user
@@ -47,7 +47,7 @@ async def unauthenticated_usage():
 async def main():
     """Run all authentication examples."""
     print("=== Authentication Examples ===")
-    
+
     await token_authentication()
     print()
     await unauthenticated_usage()

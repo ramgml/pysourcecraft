@@ -11,9 +11,9 @@ from httpx import Response
 from pysourcecraft.client import SourceCraftClient
 from pysourcecraft.models import (
     CreateRepositoryRequest,
+    ListOrganizationRepositoriesResponse,
     PaginatedResponse,
     RepoBranch,
-    RepoTag,
     Repository,
     RepoVisibility,
     UpdateRepositoryRequest,
@@ -33,16 +33,20 @@ class TestRepositoriesClientList:
         mock_repository_data: dict[str, Any],
     ) -> None:
         """Test listing repositories for a user."""
-        response_data = create_paginated_response([mock_repository_data], total=1)
+        # API returns ListOrganizationRepositoriesResponse format
+        response_data = {
+            "repositories": [mock_repository_data],
+            "next_page_token": None,
+        }
         mock_router.get("https://api.sourcecraft.dev/v1/users/testuser/repos").mock(
             return_value=Response(200, json=response_data)
         )
 
         result = await client.repositories.list("testuser")
 
-        assert isinstance(result, PaginatedResponse)
-        assert len(result.data) == 1
-        assert result.total == 1
+        assert isinstance(result, ListOrganizationRepositoriesResponse)
+        assert len(result.repositories) == 1
+        assert result.next_page_token is None
 
     @pytest.mark.asyncio
     async def test_list_repositories_for_current_user(
@@ -52,15 +56,20 @@ class TestRepositoriesClientList:
         mock_repository_data: dict[str, Any],
     ) -> None:
         """Test listing repositories for the authenticated user."""
-        response_data = create_paginated_response([mock_repository_data], total=1)
+        # API returns ListOrganizationRepositoriesResponse format
+        response_data = {
+            "repositories": [mock_repository_data],
+            "next_page_token": None,
+        }
         mock_router.get("https://api.sourcecraft.dev/v1/repos").mock(
             return_value=Response(200, json=response_data)
         )
 
         result = await client.repositories.list()
 
-        assert isinstance(result, PaginatedResponse)
-        assert len(result.data) == 1
+        assert isinstance(result, ListOrganizationRepositoriesResponse)
+        assert len(result.repositories) == 1
+        assert result.next_page_token is None
 
     @pytest.mark.asyncio
     async def test_list_org_repositories(
@@ -70,15 +79,20 @@ class TestRepositoriesClientList:
         mock_repository_data: dict[str, Any],
     ) -> None:
         """Test listing organization repositories."""
-        response_data = create_paginated_response([mock_repository_data], total=1)
+        # API returns ListOrganizationRepositoriesResponse format
+        response_data = {
+            "repositories": [mock_repository_data],
+            "next_page_token": None,
+        }
         mock_router.get("https://api.sourcecraft.dev/v1/orgs/testorg/repos").mock(
             return_value=Response(200, json=response_data)
         )
 
         result = await client.repositories.list_org_repos("testorg")
 
-        assert isinstance(result, PaginatedResponse)
-        assert len(result.data) == 1
+        assert isinstance(result, ListOrganizationRepositoriesResponse)
+        assert len(result.repositories) == 1
+        assert result.next_page_token is None
 
 
 class TestRepositoriesClientGet:

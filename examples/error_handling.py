@@ -14,13 +14,13 @@ async def basic_error_handling():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             # This will likely succeed if token is valid
             user = await client.users.get_current()
             print(f"✓ Success: {user.username}")
-            
+
         except APIError as e:
             print(f"✗ API Error: {e}")
             if e.status_code:
@@ -30,7 +30,7 @@ async def basic_error_handling():
                 print(f"  Message: {e.error_response.message}")
                 for detail in e.error_response.details:
                     print(f"  Detail: {detail.field} - {detail.message}")
-                    
+
         except Exception as e:
             print(f"✗ Unexpected error: {e}")
 
@@ -41,7 +41,7 @@ async def handle_specific_http_errors():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             # Try to access a repository that doesn't exist
@@ -49,7 +49,7 @@ async def handle_specific_http_errors():
             repo_name = "nonexistent-repo"
             repo = await client.repositories.get(owner, repo_name)
             print(f"Repository: {repo.name}")
-            
+
         except APIError as e:
             if e.status_code == 401:
                 print("✗ Authentication failed: Invalid or missing API token")
@@ -74,21 +74,21 @@ async def handle_validation_errors():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             # Try to create a repository with invalid data
             from pysourcecraft.models import CreateRepositoryRequest, RepoVisibility
-            
+
             create_request = CreateRepositoryRequest(
                 name="",  # Invalid: empty name
                 description="This should fail due to validation",
-                visibility=RepoVisibility.PUBLIC
+                visibility=RepoVisibility.PUBLIC,
             )
-            
+
             repo = await client.repositories.create(create_request)
             print(f"Created repository: {repo.name}")
-            
+
         except APIError as e:
             if e.status_code == 422 and e.error_response:
                 print("✗ Validation failed:")
@@ -102,13 +102,12 @@ async def handle_network_errors():
     """Example: Handle network-related errors."""
     # Use an invalid base URL to simulate network issues
     async with SourceCraftClient(
-        api_token="invalid-token", 
-        base_url="https://invalid-url-that-will-fail.com"
+        api_token="invalid-token", base_url="https://invalid-url-that-will-fail.com"
     ) as client:
         try:
             user = await client.users.get_current()
             print(f"User: {user.username}")
-            
+
         except APIError as e:
             if "connection" in str(e).lower() or "timeout" in str(e).lower():
                 print("✗ Network error: Unable to connect to the API")
@@ -123,18 +122,18 @@ async def graceful_error_recovery():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         max_retries = 3
         retry_count = 0
-        
+
         while retry_count < max_retries:
             try:
                 # Simulate an operation that might fail temporarily
                 user = await client.users.get_current()
                 print(f"✓ Success on attempt {retry_count + 1}: {user.username}")
                 break
-                
+
             except APIError as e:
                 if e.status_code and e.status_code >= 500:
                     # Server error - retry
@@ -154,23 +153,23 @@ async def graceful_error_recovery():
 async def main():
     """Run all error handling examples."""
     print("=== Error Handling Examples ===")
-    
+
     print("1. Basic error handling:")
     await basic_error_handling()
     print()
-    
+
     print("2. Specific HTTP error handling:")
     await handle_specific_http_errors()
     print()
-    
+
     print("3. Validation error handling:")
     await handle_validation_errors()
     print()
-    
+
     print("4. Network error handling:")
     await handle_network_errors()
     print()
-    
+
     print("5. Graceful error recovery with retries:")
     await graceful_error_recovery()
 

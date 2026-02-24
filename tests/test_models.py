@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
 
 import pytest
 from pydantic import ValidationError
 
 from pysourcecraft.models import (
     # Base
-    APIError,
     BaseModel,
     ErrorDetail,
     ErrorResponse,
@@ -19,66 +17,31 @@ from pysourcecraft.models import (
     # Issues
     CreateIssueRequest,
     Issue,
-    IssueAssignee,
-    IssueComment,
-    IssueCreator,
-    IssueEvent,
     IssueFilters,
-    IssueMilestone,
     IssueState,
     IssueStateReason,
-    Label,
     UpdateIssueRequest,
     # Pull Requests
     CreatePullRequestRequest,
     MergePullRequestRequest,
-    PRBranch,
-    PRCheck,
     PRCheckState,
-    PRFilters,
     PRMergeMethod,
-    PRReview,
     PRReviewState,
     PRState,
-    PRUser,
-    PullRequest,
-    UpdatePullRequestRequest,
-    # Repositories
     CreateRepositoryRequest,
-    RepoBranch,
-    RepoLanguage,
-    RepoLicense,
-    RepoOwner,
     RepoPermission,
-    RepoTag,
     RepoVisibility,
     Repository,
     UpdateRepositoryRequest,
     # Releases
     CreateReleaseRequest,
-    Release,
-    ReleaseAsset,
-    ReleaseAuthor,
     ReleaseState,
-    UpdateReleaseRequest,
-    # Users
-    OrgMembership,
-    Organization,
     Plan,
-    User,
     UserType,
     # CI/CD
-    Artifact,
-    Pipeline,
-    PipelineJob,
-    PipelineStage,
     PipelineStatus,
-    Workflow,
     WorkflowConclusion,
     WorkflowEvent,
-    WorkflowJob,
-    WorkflowJobStep,
-    WorkflowRun,
     WorkflowState,
 )
 
@@ -475,15 +438,20 @@ class TestModelSerialization:
         assert issue.state == IssueState.OPEN
 
     def test_repository_serialization(self) -> None:
-        """Test repository serialization."""
+        """Test repository serialization with Sourcecraft API format."""
         now = datetime.now(timezone.utc)
         repo_data = {
             "id": "repo-1",
             "name": "test-repo",
+            "slug": "test-repo",
             "full_name": "owner/test-repo",
             "url": "https://api.example.com/repos/owner/test-repo",
             "html_url": "https://example.com/owner/test-repo",
-            "clone_url": "https://example.com/owner/test-repo.git",
+            "web_url": "https://example.com/owner/test-repo",
+            "clone_url": {
+                "https": "https://example.com/owner/test-repo.git",
+                "ssh": "git@example.com:owner/test-repo.git",
+            },
             "owner": {
                 "id": "user-1",
                 "username": "owner",
@@ -493,9 +461,19 @@ class TestModelSerialization:
             "visibility": "public",
             "private": False,
             "default_branch": "main",
+            "is_empty": False,
+            "counters": {
+                "forks": "10",
+                "issues": "5",
+                "pull_requests": "3",
+                "tags": "12",
+                "branches": "8",
+            },
             "created_at": now.isoformat(),
             "updated_at": now.isoformat(),
         }
         repo = Repository.model_validate(repo_data)
         assert repo.name == "test-repo"
         assert repo.visibility == RepoVisibility.PUBLIC
+        assert repo.clone_url is not None
+        assert repo.clone_url.https == "https://example.com/owner/test-repo.git"

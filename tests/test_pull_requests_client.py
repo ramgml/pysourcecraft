@@ -16,7 +16,6 @@ from pysourcecraft.models import (
     PRMergeMethod,
     PRReview,
     PRReviewState,
-    PRCheck,
     PRCheckState,
     PaginatedResponse,
     PullRequest,

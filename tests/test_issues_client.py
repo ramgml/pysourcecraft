@@ -13,10 +13,8 @@ from pysourcecraft.models import (
     CreateIssueRequest,
     Issue,
     IssueComment,
-    IssueEvent,
     IssueFilters,
     IssueState,
-    IssueStateReason,
     PaginatedResponse,
     UpdateIssueRequest,
 )

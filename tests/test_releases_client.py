@@ -14,7 +14,6 @@ from pysourcecraft.models import (
     PaginatedResponse,
     Release,
     ReleaseAsset,
-    ReleaseState,
     UpdateReleaseRequest,
 )
 

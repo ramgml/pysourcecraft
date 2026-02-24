@@ -14,7 +14,7 @@ async def get_current_user():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             user = await client.users.get_current()
@@ -27,8 +27,10 @@ async def get_current_user():
             print(f"Followers: {user.followers_count}")
             print(f"Following: {user.following_count}")
             if user.plan:
-                print(f"Plan: {user.plan.name} (Private repos: {user.plan.private_repos})")
-            
+                print(
+                    f"Plan: {user.plan.name} (Private repos: {user.plan.private_repos})"
+                )
+
         except APIError as e:
             print(f"Error getting current user: {e}")
 
@@ -39,11 +41,11 @@ async def get_user_by_username():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             username = "example-user"  # Replace with actual username
-            
+
             user = await client.users.get(username)
             print(f"User: {user.username}")
             print(f"Name: {user.name}")
@@ -53,7 +55,7 @@ async def get_user_by_username():
             print(f"Public repos: {user.public_repos_count}")
             print(f"Followers: {user.followers_count}")
             print(f"Following: {user.following_count}")
-            
+
         except APIError as e:
             if e.status_code == 404:
                 print("User not found")
@@ -67,7 +69,7 @@ async def update_current_user():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             # Demonstrate client is ready for user operations
@@ -80,7 +82,7 @@ async def update_current_user():
             # )
             # print(f"✓ Updated user: {updated_user.username}")
             print("Note: Uncomment update code to actually modify user profile")
-            
+
         except APIError as e:
             print(f"Error updating user: {e}")
 
@@ -91,7 +93,7 @@ async def list_user_repositories():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             # List repositories for current user
@@ -101,16 +103,18 @@ async def list_user_repositories():
                 print(f"  - {repo.full_name} ({repo.visibility.value})")
                 print(f"    Description: {repo.description or 'No description'}")
                 print()
-            
+
             # List repositories for another user
             username = "example-user"  # Replace with actual username
-            other_repos = await client.users.list_repos(username=username, page=1, per_page=3)
+            other_repos = await client.users.list_repos(
+                username=username, page=1, per_page=3
+            )
             print(f"Found {other_repos.total} repositories for {username}:")
             for repo in other_repos.data:
                 print(f"  - {repo.full_name}")
                 print(f"    Stars: {repo.stargazers_count}, Forks: {repo.forks_count}")
                 print()
-                
+
         except APIError as e:
             if e.status_code == 404:
                 print("User not found")
@@ -124,7 +128,7 @@ async def list_user_organizations():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             # List organizations for current user
@@ -134,15 +138,17 @@ async def list_user_organizations():
                 print(f"  - {org.login} ({org.name})")
                 print(f"    Description: {org.description or 'No description'}")
                 print()
-            
+
             # List organizations for another user
             username = "example-user"  # Replace with actual username
-            other_orgs = await client.users.list_orgs(username=username, page=1, per_page=5)
+            other_orgs = await client.users.list_orgs(
+                username=username, page=1, per_page=5
+            )
             print(f"Found {other_orgs.total} organizations for {username}:")
             for org in other_orgs.data:
                 print(f"  - {org.login}")
                 print()
-                
+
         except APIError as e:
             if e.status_code == 404:
                 print("User not found")
@@ -156,7 +162,7 @@ async def list_organizations():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             orgs = await client.organizations.list(page=1, per_page=5)
@@ -166,7 +172,7 @@ async def list_organizations():
                 print(f"    Description: {org.description or 'No description'}")
                 print(f"    Public repos: {org.public_repos_count}")
                 print()
-                
+
         except APIError as e:
             print(f"Error listing organizations: {e}")
 
@@ -177,11 +183,11 @@ async def get_organization_details():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             org_login = "example-org"  # Replace with actual organization login
-            
+
             org = await client.organizations.get(org_login)
             print(f"Organization: {org.login}")
             print(f"Name: {org.name}")
@@ -190,7 +196,7 @@ async def get_organization_details():
             print(f"Email: {org.email}")
             print(f"Public repos: {org.public_repos_count}")
             print(f"Members: {org.members_count}")
-            
+
         except APIError as e:
             if e.status_code == 404:
                 print("Organization not found")
@@ -204,11 +210,11 @@ async def list_organization_repositories():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             org_login = "example-org"  # Replace with actual organization login
-            
+
             repos = await client.organizations.list_repos(org_login, page=1, per_page=5)
             print(f"Found {repos.total} repositories for organization {org_login}:")
             for repo in repos.data:
@@ -216,7 +222,7 @@ async def list_organization_repositories():
                 print(f"    Description: {repo.description or 'No description'}")
                 print(f"    Stars: {repo.stargazers_count}, Forks: {repo.forks_count}")
                 print()
-                
+
         except APIError as e:
             if e.status_code == 404:
                 print("Organization not found")
@@ -230,18 +236,20 @@ async def list_organization_members():
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
-    
+
     async with SourceCraftClient(api_token=api_token) as client:
         try:
             org_login = "example-org"  # Replace with actual organization login
-            
-            members = await client.organizations.list_members(org_login, page=1, per_page=10)
+
+            members = await client.organizations.list_members(
+                org_login, page=1, per_page=10
+            )
             print(f"Found {members.total} members in organization {org_login}:")
             for member in members.data:
                 print(f"  - {member.username}")
                 print(f"    Name: {member.name}")
                 print()
-                
+
         except APIError as e:
             if e.status_code == 404:
                 print("Organization not found")
@@ -252,7 +260,7 @@ async def list_organization_members():
 async def main():
     """Run all users and organizations examples."""
     print("=== Users and Organizations API Examples ===")
-    
+
     await get_current_user()
     print()
     await get_user_by_username()
