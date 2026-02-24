@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeVar
 
-from pysourcecraft.models import PaginatedResponse, PaginationParams
 
 if TYPE_CHECKING:
     from pysourcecraft.client import SourceCraftClient
@@ -39,7 +38,9 @@ class BaseResourceClient:
         """Make DELETE request."""
         return await self._client.delete(path, **kwargs)
 
-    def _paginated_params(self, params: dict | None = None, page: int = 1, per_page: int = 30) -> dict:
+    def _paginated_params(
+        self, params: dict | None = None, page: int = 1, per_page: int = 30
+    ) -> dict:
         """Build pagination parameters."""
         result = params.copy() if params else {}
         result["page"] = page

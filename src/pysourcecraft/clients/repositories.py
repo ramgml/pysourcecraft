@@ -89,7 +89,9 @@ class RepositoriesClient(BaseResourceClient):
         )
         return Repository.model_validate(data)
 
-    async def create_org_repo(self, org: str, request: CreateRepositoryRequest) -> Repository:
+    async def create_org_repo(
+        self, org: str, request: CreateRepositoryRequest
+    ) -> Repository:
         """Create a new repository in an organization.
 
         Args:

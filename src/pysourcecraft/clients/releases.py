@@ -78,7 +78,9 @@ class ReleasesClient(BaseResourceClient):
         data = await self._get(f"/repos/{owner}/{repo}/releases/latest")
         return Release.model_validate(data)
 
-    async def create(self, owner: str, repo: str, request: CreateReleaseRequest) -> Release:
+    async def create(
+        self, owner: str, repo: str, request: CreateReleaseRequest
+    ) -> Release:
         """Create a new release.
 
         Args:

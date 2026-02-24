@@ -70,7 +70,9 @@ class ErrorResponse(BaseModel):
 
     error: str = Field(description="Error type")
     message: str = Field(description="Error message")
-    details: list[ErrorDetail] = Field(default_factory=list, description="Error details")
+    details: list[ErrorDetail] = Field(
+        default_factory=list, description="Error details"
+    )
     status_code: int = Field(description="HTTP status code")
 
 

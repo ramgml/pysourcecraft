@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from pydantic import Field, HttpUrl
+from pydantic import Field
 
 from pysourcecraft.models.base import BaseModel
 
@@ -95,11 +95,21 @@ class Repository(BaseModel):
     allow_squash_merge: bool = Field(default=True, description="Allow squash merge")
     allow_merge_commit: bool = Field(default=True, description="Allow merge commit")
     allow_rebase_merge: bool = Field(default=True, description="Allow rebase merge")
-    delete_branch_on_merge: bool = Field(default=False, description="Delete branch on merge")
-    squash_merge_commit_title: str = Field(default="PR_TITLE", description="Squash merge title")
-    squash_merge_commit_message: str = Field(default="PR_BODY", description="Squash merge message")
-    merge_commit_title: str = Field(default="PR_TITLE", description="Merge commit title")
-    merge_commit_message: str = Field(default="PR_BODY", description="Merge commit message")
+    delete_branch_on_merge: bool = Field(
+        default=False, description="Delete branch on merge"
+    )
+    squash_merge_commit_title: str = Field(
+        default="PR_TITLE", description="Squash merge title"
+    )
+    squash_merge_commit_message: str = Field(
+        default="PR_BODY", description="Squash merge message"
+    )
+    merge_commit_title: str = Field(
+        default="PR_TITLE", description="Merge commit title"
+    )
+    merge_commit_message: str = Field(
+        default="PR_BODY", description="Merge commit message"
+    )
 
     # Topics
     topics: list[str] = Field(default_factory=list, description="Repository topics")
@@ -109,7 +119,9 @@ class Repository(BaseModel):
 
     # Language
     language: str | None = Field(None, description="Primary language")
-    languages: list[RepoLanguage] = Field(default_factory=list, description="Language breakdown")
+    languages: list[RepoLanguage] = Field(
+        default_factory=list, description="Language breakdown"
+    )
 
     # Timestamps
     created_at: datetime = Field(description="Creation timestamp")
@@ -137,8 +149,7 @@ class Repository(BaseModel):
 
     # Permissions
     permissions: dict[str, bool] = Field(
-        default_factory=dict,
-        description="Current user permissions"
+        default_factory=dict, description="Current user permissions"
     )
 
 
@@ -146,8 +157,12 @@ class CreateRepositoryRequest(BaseModel):
     """Request to create a repository."""
 
     name: str = Field(min_length=1, max_length=100, description="Repository name")
-    description: str | None = Field(None, max_length=350, description="Repository description")
-    visibility: RepoVisibility = Field(default=RepoVisibility.PRIVATE, description="Visibility")
+    description: str | None = Field(
+        None, max_length=350, description="Repository description"
+    )
+    visibility: RepoVisibility = Field(
+        default=RepoVisibility.PRIVATE, description="Visibility"
+    )
     homepage: str | None = Field(None, description="Homepage URL")
     has_issues: bool = Field(default=True, description="Enable issues")
     has_projects: bool = Field(default=True, description="Enable projects")
@@ -157,7 +172,9 @@ class CreateRepositoryRequest(BaseModel):
     allow_squash_merge: bool = Field(default=True, description="Allow squash merge")
     allow_merge_commit: bool = Field(default=True, description="Allow merge commit")
     allow_rebase_merge: bool = Field(default=True, description="Allow rebase merge")
-    delete_branch_on_merge: bool = Field(default=False, description="Delete branch on merge")
+    delete_branch_on_merge: bool = Field(
+        default=False, description="Delete branch on merge"
+    )
     license_key: str | None = Field(None, description="License key")
     gitignore_template: str | None = Field(None, description="Gitignore template")
 
@@ -165,8 +182,12 @@ class CreateRepositoryRequest(BaseModel):
 class UpdateRepositoryRequest(BaseModel):
     """Request to update a repository."""
 
-    name: str | None = Field(None, min_length=1, max_length=100, description="Repository name")
-    description: str | None = Field(None, max_length=350, description="Repository description")
+    name: str | None = Field(
+        None, min_length=1, max_length=100, description="Repository name"
+    )
+    description: str | None = Field(
+        None, max_length=350, description="Repository description"
+    )
     visibility: RepoVisibility | None = Field(None, description="Visibility")
     homepage: str | None = Field(None, description="Homepage URL")
     has_issues: bool | None = Field(None, description="Enable issues")
@@ -177,7 +198,9 @@ class UpdateRepositoryRequest(BaseModel):
     allow_squash_merge: bool | None = Field(None, description="Allow squash merge")
     allow_merge_commit: bool | None = Field(None, description="Allow merge commit")
     allow_rebase_merge: bool | None = Field(None, description="Allow rebase merge")
-    delete_branch_on_merge: bool | None = Field(None, description="Delete branch on merge")
+    delete_branch_on_merge: bool | None = Field(
+        None, description="Delete branch on merge"
+    )
     archived: bool | None = Field(None, description="Archive/unarchive repository")
 
 

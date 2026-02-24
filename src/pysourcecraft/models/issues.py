@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any
 
 from pydantic import Field
 
@@ -76,7 +75,9 @@ class Issue(BaseModel):
 
     # Relationships
     creator: IssueCreator = Field(description="Issue creator")
-    assignees: list[IssueAssignee] = Field(default_factory=list, description="Assignees")
+    assignees: list[IssueAssignee] = Field(
+        default_factory=list, description="Assignees"
+    )
     labels: list[Label] = Field(default_factory=list, description="Labels")
     milestone: IssueMilestone | None = Field(None, description="Milestone")
 
@@ -120,7 +121,9 @@ class IssueEvent(BaseModel):
     created_at: datetime = Field(description="Event timestamp")
     label: Label | None = Field(None, description="Label (if applicable)")
     assignee: IssueAssignee | None = Field(None, description="Assignee (if applicable)")
-    milestone: IssueMilestone | None = Field(None, description="Milestone (if applicable)")
+    milestone: IssueMilestone | None = Field(
+        None, description="Milestone (if applicable)"
+    )
 
 
 class CreateIssueRequest(BaseModel):
@@ -136,7 +139,9 @@ class CreateIssueRequest(BaseModel):
 class UpdateIssueRequest(BaseModel):
     """Request to update an issue."""
 
-    title: str | None = Field(None, min_length=1, max_length=256, description="Issue title")
+    title: str | None = Field(
+        None, min_length=1, max_length=256, description="Issue title"
+    )
     body: str | None = Field(None, description="Issue body")
     state: IssueState | None = Field(None, description="Issue state")
     state_reason: IssueStateReason | None = Field(None, description="State reason")

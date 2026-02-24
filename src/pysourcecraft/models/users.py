@@ -59,7 +59,9 @@ class User(BaseModel):
     following_count: int = Field(default=0, ge=0, description="Following count")
 
     # Stats
-    public_repos_count: int = Field(default=0, ge=0, description="Public repositories count")
+    public_repos_count: int = Field(
+        default=0, ge=0, description="Public repositories count"
+    )
     public_gists_count: int = Field(default=0, ge=0, description="Public gists count")
     private_gists_count: int = Field(default=0, ge=0, description="Private gists count")
 
@@ -99,7 +101,9 @@ class Organization(BaseModel):
     updated_at: datetime = Field(description="Last update timestamp")
 
     # Stats
-    public_repos_count: int = Field(default=0, ge=0, description="Public repositories count")
+    public_repos_count: int = Field(
+        default=0, ge=0, description="Public repositories count"
+    )
     public_gists_count: int = Field(default=0, ge=0, description="Public gists count")
     followers_count: int = Field(default=0, ge=0, description="Followers count")
     following_count: int = Field(default=0, ge=0, description="Following count")

@@ -5,7 +5,7 @@ description = "SourceCraft API-client"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "httpx>=0.28.1",
+    "httpx[socks]>=0.28.1",
     "pydantic>=2.0.0",
 ]
 
@@ -17,6 +17,33 @@ build-backend = "hatchling.build"
 dev = [
     "ruff>=0.15.2",
     "ty>=0.0.18",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "respx>=0.22.0",
 ]
 [tool.ruff]
 cache-dir = ".cache"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=src/pysourcecraft --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["src/pysourcecraft"]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

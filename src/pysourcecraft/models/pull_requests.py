@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any
 
 from pydantic import Field
 
 from pysourcecraft.models.base import BaseModel
-from pysourcecraft.models.issues import Label, IssueCreator
+from pysourcecraft.models.issues import Label
 
 
 class PRState(str, Enum):
@@ -109,7 +108,9 @@ class PullRequest(BaseModel):
 
     # Relationships
     assignees: list[PRUser] = Field(default_factory=list, description="Assignees")
-    reviewers: list[PRUser] = Field(default_factory=list, description="Requested reviewers")
+    reviewers: list[PRUser] = Field(
+        default_factory=list, description="Requested reviewers"
+    )
     labels: list[Label] = Field(default_factory=list, description="Labels")
 
     # Timestamps
@@ -129,7 +130,9 @@ class PullRequest(BaseModel):
     deletions: int = Field(default=0, ge=0, description="Lines deleted")
     changed_files: int = Field(default=0, ge=0, description="Files changed")
     comments_count: int = Field(default=0, ge=0, description="Number of comments")
-    review_comments_count: int = Field(default=0, ge=0, description="Number of review comments")
+    review_comments_count: int = Field(
+        default=0, ge=0, description="Number of review comments"
+    )
 
     # Checks
     checks: list[PRCheck] = Field(default_factory=list, description="Status checks")
@@ -139,7 +142,9 @@ class PullRequest(BaseModel):
 
     # Metadata
     locked: bool = Field(default=False, description="Whether PR is locked")
-    maintainer_can_modify: bool = Field(default=False, description="Maintainer can modify")
+    maintainer_can_modify: bool = Field(
+        default=False, description="Maintainer can modify"
+    )
 
 
 class CreatePullRequestRequest(BaseModel):
@@ -150,17 +155,23 @@ class CreatePullRequestRequest(BaseModel):
     head: str = Field(description="Head branch name")
     base: str = Field(description="Base branch name")
     draft: bool = Field(default=False, description="Create as draft")
-    maintainer_can_modify: bool = Field(default=True, description="Allow maintainer edits")
+    maintainer_can_modify: bool = Field(
+        default=True, description="Allow maintainer edits"
+    )
 
 
 class UpdatePullRequestRequest(BaseModel):
     """Request to update a pull request."""
 
-    title: str | None = Field(None, min_length=1, max_length=256, description="PR title")
+    title: str | None = Field(
+        None, min_length=1, max_length=256, description="PR title"
+    )
     body: str | None = Field(None, description="PR body")
     state: PRState | None = Field(None, description="PR state")
     base: str | None = Field(None, description="Base branch name")
-    maintainer_can_modify: bool | None = Field(None, description="Allow maintainer edits")
+    maintainer_can_modify: bool | None = Field(
+        None, description="Allow maintainer edits"
+    )
 
 
 class MergePullRequestRequest(BaseModel):
@@ -168,7 +179,9 @@ class MergePullRequestRequest(BaseModel):
 
     commit_title: str | None = Field(None, description="Merge commit title")
     commit_message: str | None = Field(None, description="Merge commit message")
-    method: PRMergeMethod = Field(default=PRMergeMethod.MERGE, description="Merge method")
+    method: PRMergeMethod = Field(
+        default=PRMergeMethod.MERGE, description="Merge method"
+    )
     sha: str | None = Field(None, description="Expected head SHA")
 
 

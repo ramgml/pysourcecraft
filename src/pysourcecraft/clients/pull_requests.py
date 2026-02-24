@@ -59,7 +59,9 @@ class PullRequestsClient(BaseResourceClient):
         data = await self._get(f"/repos/{owner}/{repo}/pulls/{pull_number}")
         return PullRequest.model_validate(data)
 
-    async def create(self, owner: str, repo: str, request: CreatePullRequestRequest) -> PullRequest:
+    async def create(
+        self, owner: str, repo: str, request: CreatePullRequestRequest
+    ) -> PullRequest:
         """Create a new pull request.
 
         Args:
@@ -97,7 +99,11 @@ class PullRequestsClient(BaseResourceClient):
         return PullRequest.model_validate(data)
 
     async def merge(
-        self, owner: str, repo: str, pull_number: int, request: MergePullRequestRequest | None = None
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+        request: MergePullRequestRequest | None = None,
     ) -> dict:
         """Merge a pull request.
 

@@ -79,7 +79,9 @@ class WorkflowRun(BaseModel):
     actor_id: str = Field(description="Actor user ID")
     actor_username: str = Field(description="Actor username")
     triggering_actor_id: str | None = Field(None, description="Triggering actor ID")
-    triggering_actor_username: str | None = Field(None, description="Triggering actor username")
+    triggering_actor_username: str | None = Field(
+        None, description="Triggering actor username"
+    )
 
     # Repository
     repository_id: str = Field(description="Repository ID")
@@ -201,10 +203,14 @@ class Pipeline(BaseModel):
     duration_seconds: int | None = Field(None, ge=0, description="Duration")
 
     # Stages
-    stages: list[PipelineStage] = Field(default_factory=list, description="Pipeline stages")
+    stages: list[PipelineStage] = Field(
+        default_factory=list, description="Pipeline stages"
+    )
 
     # Coverage
-    coverage: float | None = Field(None, ge=0, le=100, description="Test coverage percentage")
+    coverage: float | None = Field(
+        None, ge=0, le=100, description="Test coverage percentage"
+    )
 
 
 class PipelineStage(BaseModel):

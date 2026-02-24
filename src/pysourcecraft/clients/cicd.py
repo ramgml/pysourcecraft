@@ -84,15 +84,11 @@ class CICDClient(BaseResourceClient):
                 f"/repos/{owner}/{repo}/workflows/{workflow_id}/runs", params=params
             )
         else:
-            data = await self._get(
-                f"/repos/{owner}/{repo}/actions/runs", params=params
-            )
+            data = await self._get(f"/repos/{owner}/{repo}/actions/runs", params=params)
 
         return PaginatedResponse[WorkflowRun].model_validate(data)
 
-    async def get_workflow_run(
-        self, owner: str, repo: str, run_id: str
-    ) -> WorkflowRun:
+    async def get_workflow_run(self, owner: str, repo: str, run_id: str) -> WorkflowRun:
         """Get a single workflow run.
 
         Args:
@@ -106,9 +102,7 @@ class CICDClient(BaseResourceClient):
         data = await self._get(f"/repos/{owner}/{repo}/actions/runs/{run_id}")
         return WorkflowRun.model_validate(data)
 
-    async def cancel_workflow_run(
-        self, owner: str, repo: str, run_id: str
-    ) -> None:
+    async def cancel_workflow_run(self, owner: str, repo: str, run_id: str) -> None:
         """Cancel a workflow run.
 
         Args:
@@ -118,9 +112,7 @@ class CICDClient(BaseResourceClient):
         """
         await self._post(f"/repos/{owner}/{repo}/actions/runs/{run_id}/cancel")
 
-    async def rerun_workflow_run(
-        self, owner: str, repo: str, run_id: str
-    ) -> None:
+    async def rerun_workflow_run(self, owner: str, repo: str, run_id: str) -> None:
         """Re-run a workflow run.
 
         Args:
@@ -153,9 +145,7 @@ class CICDClient(BaseResourceClient):
         data = await self._get(f"/repos/{owner}/{repo}/pipelines", params=params)
         return PaginatedResponse[Pipeline].model_validate(data)
 
-    async def get_pipeline(
-        self, owner: str, repo: str, pipeline_id: str
-    ) -> Pipeline:
+    async def get_pipeline(self, owner: str, repo: str, pipeline_id: str) -> Pipeline:
         """Get a single pipeline.
 
         Args:
@@ -193,9 +183,7 @@ class CICDClient(BaseResourceClient):
         )
         return Pipeline.model_validate(data)
 
-    async def retry_pipeline(
-        self, owner: str, repo: str, pipeline_id: str
-    ) -> Pipeline:
+    async def retry_pipeline(self, owner: str, repo: str, pipeline_id: str) -> Pipeline:
         """Retry a failed pipeline.
 
         Args:
@@ -206,9 +194,7 @@ class CICDClient(BaseResourceClient):
         Returns:
             New pipeline
         """
-        data = await self._post(
-            f"/repos/{owner}/{repo}/pipelines/{pipeline_id}/retry"
-        )
+        data = await self._post(f"/repos/{owner}/{repo}/pipelines/{pipeline_id}/retry")
         return Pipeline.model_validate(data)
 
     async def cancel_pipeline(
@@ -224,9 +210,7 @@ class CICDClient(BaseResourceClient):
         Returns:
             Cancelled pipeline
         """
-        data = await self._post(
-            f"/repos/{owner}/{repo}/pipelines/{pipeline_id}/cancel"
-        )
+        data = await self._post(f"/repos/{owner}/{repo}/pipelines/{pipeline_id}/cancel")
         return Pipeline.model_validate(data)
 
     # Artifacts
@@ -265,9 +249,7 @@ class CICDClient(BaseResourceClient):
 
         return PaginatedResponse[Artifact].model_validate(data)
 
-    async def get_artifact(
-        self, owner: str, repo: str, artifact_id: str
-    ) -> Artifact:
+    async def get_artifact(self, owner: str, repo: str, artifact_id: str) -> Artifact:
         """Get a single artifact.
 
         Args:
@@ -278,14 +260,10 @@ class CICDClient(BaseResourceClient):
         Returns:
             Artifact details
         """
-        data = await self._get(
-            f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}"
-        )
+        data = await self._get(f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}")
         return Artifact.model_validate(data)
 
-    async def delete_artifact(
-        self, owner: str, repo: str, artifact_id: str
-    ) -> None:
+    async def delete_artifact(self, owner: str, repo: str, artifact_id: str) -> None:
         """Delete an artifact.
 
         Args:
@@ -293,13 +271,9 @@ class CICDClient(BaseResourceClient):
             repo: Repository name
             artifact_id: Artifact ID
         """
-        await self._delete(
-            f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}"
-        )
+        await self._delete(f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}")
 
-    async def download_artifact(
-        self, owner: str, repo: str, artifact_id: str
-    ) -> bytes:
+    async def download_artifact(self, owner: str, repo: str, artifact_id: str) -> bytes:
         """Download an artifact.
 
         Args:

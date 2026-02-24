@@ -67,13 +67,17 @@ class Release(BaseModel):
     published_at: datetime | None = Field(None, description="Publication timestamp")
 
     # Assets
-    assets: list[ReleaseAsset] = Field(default_factory=list, description="Release assets")
+    assets: list[ReleaseAsset] = Field(
+        default_factory=list, description="Release assets"
+    )
 
     # Discussion
     discussion_url: str | None = Field(None, description="Discussion URL")
 
     # Reactions
-    reactions: dict[str, int] = Field(default_factory=dict, description="Reaction counts")
+    reactions: dict[str, int] = Field(
+        default_factory=dict, description="Reaction counts"
+    )
 
 
 class CreateReleaseRequest(BaseModel):

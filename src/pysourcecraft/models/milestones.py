@@ -63,14 +63,18 @@ class CreateMilestoneRequest(BaseModel):
 
     title: str = Field(min_length=1, max_length=255, description="Milestone title")
     description: str | None = Field(None, description="Milestone description")
-    state: MilestoneState = Field(default=MilestoneState.OPEN, description="Milestone state")
+    state: MilestoneState = Field(
+        default=MilestoneState.OPEN, description="Milestone state"
+    )
     due_on: datetime | None = Field(None, description="Due date")
 
 
 class UpdateMilestoneRequest(BaseModel):
     """Request to update a milestone."""
 
-    title: str | None = Field(None, min_length=1, max_length=255, description="Milestone title")
+    title: str | None = Field(
+        None, min_length=1, max_length=255, description="Milestone title"
+    )
     description: str | None = Field(None, description="Milestone description")
     state: MilestoneState | None = Field(None, description="Milestone state")
     due_on: datetime | None = Field(None, description="Due date")
