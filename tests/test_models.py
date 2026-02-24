@@ -364,7 +364,7 @@ class TestReleaseModels:
         """Test release state enum."""
         assert ReleaseState.PUBLISHED == "published"
         assert ReleaseState.DRAFT == "draft"
-        assert ReleaseState.PRERELEASE == "prerelease"
+        assert ReleaseState.DISCARDED == "discarded"
 
     def test_create_release_request(self) -> None:
         """Test create release request."""

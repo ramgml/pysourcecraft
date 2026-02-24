@@ -244,13 +244,14 @@ class TestReleasesClientAssets:
         asset_data = {
             "id": "asset-001",
             "name": "app-v1.0.0.zip",
-            "content_type": "application/zip",
-            "size": 1024000,
-            "download_count": 100,
-            "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/releases/assets/1",
-            "browser_download_url": "https://sourcecraft.dev/testuser/test-repo/releases/download/v1.0.0/app-v1.0.0.zip",
-            "created_at": mock_datetime.isoformat(),
-            "updated_at": mock_datetime.isoformat(),
+            "link": "https://sourcecraft.dev/testuser/test-repo/releases/download/v1.0.0/app-v1.0.0.zip",
+            "attachment": {
+                "id": "attachment-001",
+                "name": "app-v1.0.0.zip",
+                "mime_type": "application/zip",
+                "file_type": "archive",
+                "size": "1024000",
+            },
         }
         response_data = create_paginated_response([asset_data], total=1)
         mock_router.get(
@@ -276,13 +277,14 @@ class TestReleasesClientAssets:
         asset_data = {
             "id": "asset-002",
             "name": "release-notes.md",
-            "content_type": "text/markdown",
-            "size": 1024,
-            "download_count": 0,
-            "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/releases/assets/2",
-            "browser_download_url": "https://sourcecraft.dev/testuser/test-repo/releases/download/v1.0.0/release-notes.md",
-            "created_at": mock_datetime.isoformat(),
-            "updated_at": mock_datetime.isoformat(),
+            "link": "https://sourcecraft.dev/testuser/test-repo/releases/download/v1.0.0/release-notes.md",
+            "attachment": {
+                "id": "attachment-002",
+                "name": "release-notes.md",
+                "mime_type": "text/markdown",
+                "file_type": "text",
+                "size": "1024",
+            },
         }
         mock_router.post(
             "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/releases/release-001/assets"
@@ -300,7 +302,8 @@ class TestReleasesClientAssets:
 
         assert isinstance(result, ReleaseAsset)
         assert result.name == "release-notes.md"
-        assert result.content_type == "text/markdown"
+        assert result.attachment is not None
+        assert result.attachment.mime_type == "text/markdown"
 
     @pytest.mark.asyncio
     async def test_delete_asset(

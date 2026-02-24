@@ -322,41 +322,38 @@ def mock_pull_request_data(mock_datetime: datetime) -> dict[str, Any]:
 
 @pytest.fixture
 def mock_release_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock release data."""
+    """Return mock release data matching swagger schema."""
     return {
         "id": "release-001",
-        "tag_name": "v1.0.0",
-        "name": "Version 1.0.0",
-        "body": "Initial release",
-        "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/releases/1",
-        "html_url": "https://sourcecraft.dev/testuser/test-repo/releases/tag/v1.0.0",
-        "tarball_url": "https://sourcecraft.dev/testuser/test-repo/tarball/v1.0.0",
-        "zipball_url": "https://sourcecraft.dev/testuser/test-repo/zipball/v1.0.0",
+        "repo_id": "repo-789",
         "author": {
             "id": "user-123",
-            "username": "testuser",
-            "avatar_url": "https://avatars.sourcecraft.dev/u/123",
+            "slug": "testuser",
         },
-        "target_commitish": "main",
-        "draft": False,
-        "prerelease": False,
-        "created_at": mock_datetime.isoformat(),
-        "published_at": mock_datetime.isoformat(),
+        "tag": "v1.0.0",
+        "hash": "abc123def456",
+        "title": "Version 1.0.0",
+        "release_notes": "Initial release",
+        "status": "published",
         "assets": [
             {
                 "id": "asset-001",
                 "name": "app-v1.0.0.zip",
-                "content_type": "application/zip",
-                "size": 1024000,
-                "download_count": 100,
-                "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/releases/assets/1",
-                "browser_download_url": "https://sourcecraft.dev/testuser/test-repo/releases/download/v1.0.0/app-v1.0.0.zip",
-                "created_at": mock_datetime.isoformat(),
-                "updated_at": mock_datetime.isoformat(),
+                "link": "https://sourcecraft.dev/testuser/test-repo/releases/download/v1.0.0/app-v1.0.0.zip",
+                "attachment": {
+                    "id": "attachment-001",
+                    "name": "app-v1.0.0.zip",
+                    "mime_type": "application/zip",
+                    "file_type": "archive",
+                    "size": "1024000",
+                },
             }
         ],
-        "discussion_url": None,
-        "reactions": {"+1": 10, "-1": 0},
+        "is_latest": True,
+        "is_pre_release": False,
+        "created_at": mock_datetime.isoformat(),
+        "updated_at": mock_datetime.isoformat(),
+        "released_at": mock_datetime.isoformat(),
     }
 
 

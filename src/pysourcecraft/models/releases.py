@@ -8,76 +8,111 @@ from enum import Enum
 from pydantic import Field
 
 from pysourcecraft.models.base import BaseModel
+from pysourcecraft.models.users import UserEmbedded
 
 
-class ReleaseState(str, Enum):
-    """Release state enum."""
+class ReleaseStatus(str, Enum):
+    """Release status enum.
 
-    PUBLISHED = "published"
+    Matches swagger schema Release.Status definition.
+    """
+
     DRAFT = "draft"
-    PRERELEASE = "prerelease"
+    PUBLISHED = "published"
+    DISCARDED = "discarded"
+
+
+class Attachment(BaseModel):
+    """Attachment model.
+
+    Matches swagger schema Attachment definition.
+    """
+
+    id: str = Field(description="Attachment ID")
+    name: str = Field(description="Attachment name")
+    mime_type: str = Field(description="MIME type")
+    file_type: str | None = Field(None, description="File type")
+    size: str = Field(description="File size")
 
 
 class ReleaseAsset(BaseModel):
-    """Release asset model."""
+    """Release asset model.
+
+    Matches swagger schema ReleaseAsset definition.
+    """
 
     id: str = Field(description="Asset ID")
     name: str = Field(description="Asset name")
-    content_type: str = Field(description="Content type (MIME)")
-    size: int = Field(ge=0, description="File size in bytes")
-    download_count: int = Field(default=0, ge=0, description="Download count")
-    url: str = Field(description="API URL")
-    browser_download_url: str = Field(description="Download URL")
-    created_at: datetime = Field(description="Upload timestamp")
-    updated_at: datetime = Field(description="Last update timestamp")
-
-
-class ReleaseAuthor(BaseModel):
-    """Release author reference."""
-
-    id: str = Field(description="User ID")
-    username: str = Field(description="Username")
-    avatar_url: str | None = Field(None, description="Avatar URL")
+    link: str | None = Field(None, description="Asset link")
+    attachment: Attachment | None = Field(None, description="Attachment details")
 
 
 class Release(BaseModel):
-    """Release model."""
+    """Release model.
+
+    Matches swagger schema Release definition.
+    """
 
     id: str = Field(description="Release ID")
-    tag_name: str = Field(description="Git tag name")
-    name: str | None = Field(None, description="Release name")
-    body: str | None = Field(None, description="Release notes")
-    url: str = Field(description="API URL")
-    html_url: str = Field(description="HTML URL")
-    tarball_url: str | None = Field(None, description="Source tarball URL")
-    zipball_url: str | None = Field(None, description="Source zipball URL")
-
-    # Author
-    author: ReleaseAuthor = Field(description="Release author")
-
-    # Target
-    target_commitish: str = Field(description="Target commit/branch")
-
-    # State
-    draft: bool = Field(default=False, description="Whether this is a draft")
-    prerelease: bool = Field(default=False, description="Whether this is a prerelease")
-
-    # Timestamps
-    created_at: datetime = Field(description="Creation timestamp")
-    published_at: datetime | None = Field(None, description="Publication timestamp")
-
-    # Assets
+    repo_id: str = Field(description="Repository ID")
+    author: UserEmbedded = Field(description="Release author")
+    tag: str = Field(description="Release tag (also serves as its slug)")
+    hash: str = Field(description="Git hash")
+    title: str | None = Field(None, description="Release title")
+    release_notes: str | None = Field(None, description="Release notes")
+    status: ReleaseStatus = Field(description="Release status")
     assets: list[ReleaseAsset] = Field(
         default_factory=list, description="Release assets"
     )
+    is_latest: bool = Field(description="Whether this is the latest release")
+    is_pre_release: bool = Field(description="Whether this is a pre-release")
+    created_at: datetime = Field(description="Creation timestamp")
+    updated_at: datetime = Field(description="Last update timestamp")
+    released_at: datetime | None = Field(None, description="Release timestamp")
 
-    # Discussion
-    discussion_url: str | None = Field(None, description="Discussion URL")
+    # Backward compatibility property
+    @property
+    def name(self) -> str | None:
+        """Backward compatibility: returns title as name."""
+        return self.title
 
-    # Reactions
-    reactions: dict[str, int] = Field(
-        default_factory=dict, description="Reaction counts"
-    )
+    @property
+    def tag_name(self) -> str:
+        """Backward compatibility: returns tag as tag_name."""
+        return self.tag
+
+    @property
+    def body(self) -> str | None:
+        """Backward compatibility: returns release_notes as body."""
+        return self.release_notes
+
+    @property
+    def prerelease(self) -> bool:
+        """Backward compatibility: returns is_pre_release as prerelease."""
+        return self.is_pre_release
+
+    @property
+    def draft(self) -> bool:
+        """Backward compatibility: returns if status is draft."""
+        return self.status == ReleaseStatus.DRAFT
+
+    @property
+    def published_at(self) -> datetime | None:
+        """Backward compatibility: returns released_at as published_at."""
+        return self.released_at
+
+
+# Backward compatibility aliases
+ReleaseState = ReleaseStatus
+
+
+class ReleaseAuthor(UserEmbedded):
+    """Release author reference (backward compatibility alias).
+
+    .. deprecated:: Use UserEmbedded instead.
+    """
+
+    pass
 
 
 class CreateReleaseRequest(BaseModel):
