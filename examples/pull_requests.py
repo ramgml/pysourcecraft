@@ -25,9 +25,9 @@ async def list_pull_requests():
             prs = await client.pull_requests.list(owner, repo_name, page=1, per_page=5)
             print(f"Found {prs.total} pull requests in {owner}/{repo_name}:")
             for pr in prs.data:
-                print(f"  - #{pr.number}: {pr.title}")
-                print(f"    State: {pr.state.value}, Author: {pr.user.username}")
-                print(f"    Base: {pr.base.ref} <- Head: {pr.head.ref}")
+                print(f"  - {pr.slug}: {pr.title}")
+                print(f"    Status: {pr.status.value}, Author: {pr.author.slug}")
+                print(f"    Target: {pr.target_branch} <- Source: {pr.source_branch}")
                 print(f"    Created: {pr.created_at}")
                 print()
 
@@ -52,15 +52,16 @@ async def get_pull_request_details():
             pr_number = 1  # Replace with actual PR number
 
             pr = await client.pull_requests.get(owner, repo_name, pr_number)
-            print(f"PR #{pr.number}: {pr.title}")
-            print(f"State: {pr.state.value}")
-            print(f"Author: {pr.user.username}")
-            print(f"Base branch: {pr.base.ref} ({pr.base.sha[:8]})")
-            print(f"Head branch: {pr.head.ref} ({pr.head.sha[:8]})")
-            print(f"Mergeable: {pr.mergeable}")
+            print(f"PR {pr.slug}: {pr.title}")
+            print(f"Status: {pr.status.value}")
+            print(f"Author: {pr.author.slug}")
+            print(f"Source branch: {pr.source_branch}")
+            print(f"Target branch: {pr.target_branch}")
             print(f"Created: {pr.created_at}")
             print(f"Updated: {pr.updated_at}")
-            print(f"Body: {pr.body[:100] if pr.body else 'No description'}...")
+            print(
+                f"Description: {pr.description[:100] if pr.description else 'No description'}..."
+            )
 
         except APIError as e:
             if e.status_code == 404:
@@ -84,23 +85,26 @@ async def create_and_update_pull_request():
             # Create pull request
             create_request = CreatePullRequestRequest(
                 title="Test PR from PySourceCraft",
-                body="This PR was created using the PySourceCraft API client.",
-                head="feature-branch",  # Source branch
-                base="main",  # Target branch
-                draft=False,
+                description="This PR was created using the PySourceCraft API client.",
+                source_branch="feature-branch",  # Source branch
+                target_branch="main",  # Target branch
+                publish=True,  # Publish immediately (False = draft)
             )
 
             new_pr = await client.pull_requests.create(owner, repo_name, create_request)
-            print(f"✓ Created PR #{new_pr.number}: {new_pr.title}")
+            print(f"✓ Created PR {new_pr.slug}: {new_pr.title}")
 
-            # Update pull request
+            # Update pull request (using PR ID since number is not available)
             update_request = UpdatePullRequestRequest(
                 title="Updated Test PR from PySourceCraft",
-                body="This PR was updated using the PySourceCraft API client.",
+                description="This PR was updated using the PySourceCraft API client.",
             )
 
+            # Note: In the Sourcecraft API, you may need to use PR ID instead of number
+            # The pull_requests.update method accepts an identifier parameter
+            pr_identifier = 1  # Replace with actual PR ID or number
             updated_pr = await client.pull_requests.update(
-                owner, repo_name, new_pr.number, update_request
+                owner, repo_name, pr_identifier, update_request
             )
             print(f"✓ Updated PR title to: {updated_pr.title}")
 

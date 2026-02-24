@@ -255,8 +255,10 @@ class TestPullRequestModels:
 
     def test_pr_state_enum(self) -> None:
         """Test PR state enum."""
+        assert PRState.DRAFT == "draft"
         assert PRState.OPEN == "open"
-        assert PRState.CLOSED == "closed"
+        assert PRState.DISCARDED == "discarded"
+        assert PRState.MERGING == "merging"
         assert PRState.MERGED == "merged"
 
     def test_pr_merge_method_enum(self) -> None:
@@ -281,17 +283,20 @@ class TestPullRequestModels:
         """Test create PR request."""
         request = CreatePullRequestRequest(
             title="Test PR",
-            head="feature",
-            base="main",
-            draft=True,
+            source_branch="feature",
+            target_branch="main",
+            publish=True,
         )
         assert request.title == "Test PR"
-        assert request.draft is True
+        assert request.publish is True
 
     def test_create_pull_request_request_validation(self) -> None:
-        """Test PR request validation."""
+        """Test PR request validation - title max length."""
+        # Title exceeds max_length of 1024
         with pytest.raises(ValidationError):
-            CreatePullRequestRequest(title="", head="feature", base="main")
+            CreatePullRequestRequest(
+                title="x" * 1025, source_branch="feature", target_branch="main"
+            )
 
     def test_merge_pull_request_request(self) -> None:
         """Test merge PR request."""

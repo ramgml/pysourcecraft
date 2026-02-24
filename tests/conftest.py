@@ -296,52 +296,27 @@ def mock_issue_comment_data(mock_datetime: datetime) -> dict[str, Any]:
 
 @pytest.fixture
 def mock_pull_request_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock pull request data."""
+    """Return mock pull request data matching Sourcecraft API schema."""
     return {
         "id": "pr-001",
-        "number": 1,
+        "slug": "test-pr",
         "title": "Test Pull Request",
-        "body": "This is a test PR",
-        "state": "open",
-        "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/pulls/1",
-        "html_url": "https://sourcecraft.dev/testuser/test-repo/pulls/1",
-        "diff_url": "https://sourcecraft.dev/testuser/test-repo/pulls/1.diff",
-        "patch_url": "https://sourcecraft.dev/testuser/test-repo/pulls/1.patch",
-        "head": {
-            "ref": "feature-branch",
-            "sha": "abc123def456",
-            "repo_id": "repo-789",
-        },
-        "base": {
-            "ref": "main",
-            "sha": "def789abc012",
-            "repo_id": "repo-789",
-        },
-        "user": {
+        "description": "This is a test PR",
+        "status": "open",
+        "source_branch": "feature-branch",
+        "target_branch": "main",
+        "author": {
             "id": "user-123",
-            "username": "testuser",
-            "avatar_url": "https://avatars.sourcecraft.dev/u/123",
+            "slug": "testuser",
         },
-        "assignees": [],
-        "reviewers": [],
-        "labels": [],
+        "updated_by": None,
+        "repository": {
+            "id": "repo-789",
+            "slug": "test-repo",
+        },
+        "merge_info": None,
         "created_at": mock_datetime.isoformat(),
         "updated_at": mock_datetime.isoformat(),
-        "closed_at": None,
-        "merged_at": None,
-        "merged": False,
-        "mergeable": True,
-        "merge_commit_sha": None,
-        "merged_by": None,
-        "additions": 100,
-        "deletions": 50,
-        "changed_files": 5,
-        "comments_count": 3,
-        "review_comments_count": 2,
-        "checks": [],
-        "draft": False,
-        "locked": False,
-        "maintainer_can_modify": True,
     }
 
 

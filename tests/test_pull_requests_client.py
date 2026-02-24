@@ -61,7 +61,7 @@ class TestPullRequestsClientList:
             "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/pulls"
         ).mock(return_value=Response(200, json=response_data))
 
-        filters = PRFilters(state=PRState.OPEN, base="main")
+        filters = PRFilters(state=PRState.OPEN, target_branch="main")
         result = await client.pull_requests.list(
             "testuser", "test-repo", filters=filters
         )
@@ -88,9 +88,9 @@ class TestPullRequestsClientGet:
 
         assert isinstance(result, PullRequest)
         assert result.id == "pr-001"
-        assert result.number == 1
+        assert result.slug == "test-pr"
         assert result.title == "Test Pull Request"
-        assert result.state == PRState.OPEN
+        assert result.status == PRState.OPEN
 
 
 class TestPullRequestsClientCreate:
@@ -110,9 +110,9 @@ class TestPullRequestsClientCreate:
 
         request = CreatePullRequestRequest(
             title="Test Pull Request",
-            body="This is a test PR",
-            head="feature-branch",
-            base="main",
+            description="This is a test PR",
+            source_branch="feature-branch",
+            target_branch="main",
         )
         result = await client.pull_requests.create("testuser", "test-repo", request)
 
@@ -133,9 +133,9 @@ class TestPullRequestsClientCreate:
 
         request = CreatePullRequestRequest(
             title="WIP: Test PR",
-            head="feature-branch",
-            base="main",
-            draft=True,
+            source_branch="feature-branch",
+            target_branch="main",
+            publish=False,
         )
         result = await client.pull_requests.create("testuser", "test-repo", request)
 

@@ -56,17 +56,17 @@ async def comprehensive_example():
             print("\n4. Creating a pull request...")
             pr_request = CreatePullRequestRequest(
                 title="Test PR from Comprehensive Example",
-                body="This PR was created as part of the comprehensive PySourceCraft example.",
-                head="feature-branch",
-                base="main",
-                draft=False,
+                description="This PR was created as part of the comprehensive PySourceCraft example.",
+                source_branch="feature-branch",
+                target_branch="main",
+                publish=True,
             )
             # Note: This will likely fail if the branches don't exist, but demonstrates the API call
             try:
                 pr = await client.pull_requests.create(
                     repo.owner.username, repo.name, pr_request
                 )
-                print(f"   Created PR #{pr.number}: {pr.title}")
+                print(f"   Created PR {pr.slug}: {pr.title}")
             except APIError as e:
                 print(f"   Skipped PR creation (expected if branches don't exist): {e}")
 
