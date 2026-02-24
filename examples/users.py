@@ -70,6 +70,8 @@ async def update_current_user():
     
     async with SourceCraftClient(api_token=api_token) as client:
         try:
+            # Demonstrate client is ready for user operations
+            print(f"Client ready for user updates (base_url: {client.base_url})")
             # Update user fields (uncomment to test)
             # updated_user = await client.users.update(
             #     name="Updated Name",

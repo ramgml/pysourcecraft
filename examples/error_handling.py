@@ -5,7 +5,7 @@ Error handling examples for PySourceCraft API client.
 import asyncio
 import os
 
-from pysourcecraft import SourceCraftClient, APIError, ErrorResponse
+from pysourcecraft import SourceCraftClient, APIError
 
 
 async def basic_error_handling():

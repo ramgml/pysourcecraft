@@ -109,6 +109,7 @@ async def safe_api_call():
 - **5xx Server Errors**: Temporary server issues
 
 The `APIError` exception includes:
+
 - `message`: Human-readable error message
 - `status_code`: HTTP status code (if available)
 - `error_response`: Full `ErrorResponse` object with detailed error information
@@ -120,11 +121,13 @@ The `APIError` exception includes:
 The main client provides access to all resource-specific clients and handles HTTP communication.
 
 **Constructor Parameters:**
+
 - `api_token` (str, optional): API token for authentication
-- `base_url` (str): Base URL for the API (default: "https://api.sourcecraft.dev/v1")
+- `base_url` (str): Base URL for the API (default: "<https://api.sourcecraft.dev/v1>")
 - `timeout` (float): Request timeout in seconds (default: 30.0)
 
 **HTTP Methods:**
+
 - `get(path, **kwargs)`: Make GET request
 - `post(path, **kwargs)`: Make POST request  
 - `put(path, **kwargs)`: Make PUT request
@@ -136,6 +139,7 @@ The main client provides access to all resource-specific clients and handles HTT
 Manage repositories and their contents.
 
 **Methods:**
+
 - `list(username=None, page=1, per_page=30)`: List repositories for a user
 - `list_org_repos(org, page=1, per_page=30)`: List organization repositories
 - `get(owner, repo)`: Get repository details
@@ -152,6 +156,7 @@ Manage repositories and their contents.
 Manage issues and their lifecycle.
 
 **Methods:**
+
 - `list(owner, repo, filters=None, page=1, per_page=30)`: List issues
 - `get(owner, repo, issue_number)`: Get issue details
 - `create(owner, repo, request)`: Create new issue
@@ -167,6 +172,7 @@ Manage issues and their lifecycle.
 Manage pull requests and code reviews.
 
 **Methods:**
+
 - `list(owner, repo, filters=None, page=1, per_page=30)`: List pull requests
 - `get(owner, repo, pull_number)`: Get pull request details
 - `create(owner, repo, request)`: Create new pull request
@@ -181,16 +187,19 @@ Manage pull requests and code reviews.
 Manage workflows, pipelines, and artifacts.
 
 **Workflows:**
+
 - `list_workflows(owner, repo, page=1, per_page=30)`: List workflows
 - `get_workflow(owner, repo, workflow_id)`: Get workflow details
 
 **Workflow Runs:**
+
 - `list_workflow_runs(owner, repo, workflow_id=None, branch=None, page=1, per_page=30)`: List workflow runs
 - `get_workflow_run(owner, repo, run_id)`: Get workflow run details
 - `cancel_workflow_run(owner, repo, run_id)`: Cancel workflow run
 - `rerun_workflow_run(owner, repo, run_id)`: Re-run workflow run
 
 **Pipelines:**
+
 - `list_pipelines(owner, repo, page=1, per_page=30)`: List pipelines
 - `get_pipeline(owner, repo, pipeline_id)`: Get pipeline details
 - `create_pipeline(owner, repo, ref, variables=None)`: Create new pipeline
@@ -198,6 +207,7 @@ Manage workflows, pipelines, and artifacts.
 - `cancel_pipeline(owner, repo, pipeline_id)`: Cancel pipeline
 
 **Artifacts:**
+
 - `list_artifacts(owner, repo, run_id=None, page=1, per_page=30)`: List artifacts
 - `get_artifact(owner, repo, artifact_id)`: Get artifact details
 - `delete_artifact(owner, repo, artifact_id)`: Delete artifact
@@ -208,6 +218,7 @@ Manage workflows, pipelines, and artifacts.
 Manage releases and release assets.
 
 **Methods:**
+
 - `list(owner, repo, page=1, per_page=30)`: List releases
 - `get(owner, repo, release_id)`: Get release by ID
 - `get_by_tag(owner, repo, tag)`: Get release by tag
@@ -224,6 +235,7 @@ Manage releases and release assets.
 Manage user accounts and personal repositories.
 
 **Methods:**
+
 - `get_current()`: Get authenticated user
 - `get(username)`: Get user by username
 - `update(**kwargs)`: Update authenticated user
@@ -235,6 +247,7 @@ Manage user accounts and personal repositories.
 Manage organizations and their members.
 
 **Methods:**
+
 - `list(page=1, per_page=30)`: List organizations
 - `get(org)`: Get organization details
 - `update(org, **kwargs)`: Update organization

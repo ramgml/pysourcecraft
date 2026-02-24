@@ -5,11 +5,13 @@ This directory contains comprehensive examples demonstrating how to use the PySo
 ## Prerequisites
 
 1. Set your SourceCraft API token as an environment variable:
+
    ```bash
    export SOURCECRAFT_API_TOKEN="your-api-token-here"
    ```
 
 2. Install the PySourceCraft library:
+
    ```bash
    pip install pysourcecraft
    ```
@@ -49,6 +51,7 @@ python examples/comprehensive_example.py
 ## Error Handling
 
 The examples include comprehensive error handling patterns. Common errors include:
+
 - **401 Unauthorized**: Invalid or missing API token
 - **403 Forbidden**: Insufficient permissions
 - **404 Not Found**: Resource doesn't exist
@@ -59,6 +62,7 @@ Refer to `error_handling.py` for detailed error handling strategies.
 ## Getting Help
 
 If you encounter issues with the examples:
+
 1. Check that your API token is valid and has appropriate permissions
 2. Verify that the repository/user names you're using exist
 3. Review the [main README](../README.md) for additional documentation

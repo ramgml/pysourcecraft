@@ -41,7 +41,7 @@ async def main():
     
     # Basic initialization
     client = await basic_client_initialization()
-    print("✓ Client initialized successfully")
+    print(f"✓ Client initialized successfully (base_url: {client.base_url})")
     
     # Context manager usage
     await context_manager_usage()

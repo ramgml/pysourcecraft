@@ -16,6 +16,10 @@ from pysourcecraft.models import (
 )
 
 
+# Demonstrate IssueState enum values
+print(f"Available issue states: {[state.value for state in IssueState]}")
+
+
 async def comprehensive_example():
     """Comprehensive example demonstrating multiple API features."""
     api_token = os.getenv("SOURCECRAFT_API_TOKEN")
