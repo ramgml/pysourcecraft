@@ -26,10 +26,13 @@ async def basic_error_handling():
             if e.status_code:
                 print(f"  Status Code: {e.status_code}")
             if e.error_response:
-                print(f"  Error Type: {e.error_response.error}")
+                print(f"  Error Type: {e.error_response.error_code}")
                 print(f"  Message: {e.error_response.message}")
-                for detail in e.error_response.details:
-                    print(f"  Detail: {detail.field} - {detail.message}")
+                if e.error_response.request_id:
+                    print(f"  Request ID: {e.error_response.request_id}")
+                if e.error_response.details:
+                    for key, value in e.error_response.details.items():
+                        print(f"  Detail: {key} - {value}")
 
         except Exception as e:
             print(f"✗ Unexpected error: {e}")
@@ -59,9 +62,9 @@ async def handle_specific_http_errors():
                 print("✗ Not Found: Repository or resource does not exist")
             elif e.status_code == 422:
                 print("✗ Validation Error: Invalid request data")
-                if e.error_response:
-                    for detail in e.error_response.details:
-                        print(f"  - {detail.field}: {detail.message}")
+                if e.error_response and e.error_response.details:
+                    for key, value in e.error_response.details.items():
+                        print(f"  - {key}: {value}")
             elif e.status_code and e.status_code >= 500:
                 print("✗ Server Error: Temporary server issue, please retry")
             else:
@@ -92,8 +95,9 @@ async def handle_validation_errors():
         except APIError as e:
             if e.status_code == 422 and e.error_response:
                 print("✗ Validation failed:")
-                for detail in e.error_response.details:
-                    print(f"  - {detail.field}: {detail.message}")
+                if e.error_response.details:
+                    for key, value in e.error_response.details.items():
+                        print(f"  - {key}: {value}")
             else:
                 print(f"✗ Other error: {e}")
 

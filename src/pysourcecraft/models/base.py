@@ -57,23 +57,24 @@ class PaginatedResponse(BaseModel, Generic[T]):
         return self.page > 1
 
 
-class ErrorDetail(BaseModel):
-    """Error detail information."""
-
-    field: str | None = Field(None, description="Field that caused the error")
-    message: str = Field(description="Error message")
-    code: str | None = Field(None, description="Error code")
-
-
 class ErrorResponse(BaseModel):
-    """API error response."""
+    """API error response matching ApiErrorResponse from swagger.
 
-    error: str = Field(description="Error type")
-    message: str = Field(description="Error message")
-    details: list[ErrorDetail] = Field(
-        default_factory=list, description="Error details"
+    Schema from sourcecraft.swagger.json:
+    - error_code: Error code that can be used for error handling
+    - message: Human-readable message
+    - request_id: Request ID for tracking
+    - details: Optional details (structure depends on error_code)
+    """
+
+    error_code: str = Field(
+        description="Error code that can be used for error handling"
     )
-    status_code: int = Field(description="HTTP status code")
+    message: str = Field(description="Human-readable message")
+    request_id: str | None = Field(None, description="Request ID")
+    details: dict[str, str] | None = Field(
+        None, description="Optional details (structure depends on error_code)"
+    )
 
 
 class APIError(Exception):

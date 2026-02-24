@@ -10,7 +10,6 @@ from pydantic import ValidationError
 from pysourcecraft.models import (
     # Base
     BaseModel,
-    ErrorDetail,
     ErrorResponse,
     PaginatedResponse,
     PaginationParams,
@@ -145,26 +144,29 @@ class TestPaginatedResponse:
 class TestErrorModels:
     """Tests for error models."""
 
-    def test_error_detail(self) -> None:
-        """Test error detail model."""
-        detail = ErrorDetail(field="email", message="Invalid email", code="invalid")
-        assert detail.field == "email"
-        assert detail.message == "Invalid email"
-        assert detail.code == "invalid"
-
     def test_error_response(self) -> None:
         """Test error response model."""
         response = ErrorResponse(
-            error="ValidationError",
+            error_code="ValidationError",
             message="Invalid input",
-            status_code=422,
-            details=[
-                ErrorDetail(field="email", message="Invalid email", code="invalid")
-            ],
+            request_id="req-123",
+            details={"field": "email", "error": "Invalid email"},
         )
-        assert response.error == "ValidationError"
-        assert response.status_code == 422
-        assert len(response.details) == 1
+        assert response.error_code == "ValidationError"
+        assert response.message == "Invalid input"
+        assert response.request_id == "req-123"
+        assert response.details == {"field": "email", "error": "Invalid email"}
+
+    def test_error_response_minimal(self) -> None:
+        """Test error response with minimal fields."""
+        response = ErrorResponse(
+            error_code="NotFound",
+            message="Resource not found",
+        )
+        assert response.error_code == "NotFound"
+        assert response.message == "Resource not found"
+        assert response.request_id is None
+        assert response.details is None
 
 
 # =============================================================================

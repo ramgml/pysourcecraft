@@ -3,7 +3,6 @@
 from pysourcecraft.models.base import (
     APIError,
     BaseModel,
-    ErrorDetail,
     ErrorResponse,
     PaginatedResponse,
     PaginationParams,
@@ -100,7 +99,6 @@ __all__ = [
     "BaseModel",
     "PaginationParams",
     "PaginatedResponse",
-    "ErrorDetail",
     "ErrorResponse",
     "APIError",
     # Issues

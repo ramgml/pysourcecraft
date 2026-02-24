@@ -9,7 +9,7 @@ import respx
 from httpx import Response
 
 from pysourcecraft.client import SourceCraftClient
-from pysourcecraft.models import APIError, ErrorDetail, ErrorResponse
+from pysourcecraft.models import APIError, ErrorResponse
 
 
 class TestClientInitialization:
@@ -175,10 +175,10 @@ class TestClientErrorHandling:
     ) -> None:
         """Test handling HTTP error with JSON error response."""
         error_data = {
-            "error": "NotFound",
+            "error_code": "NotFound",
             "message": "Resource not found",
-            "details": [{"field": "id", "message": "Invalid ID", "code": "invalid"}],
-            "status_code": 404,
+            "request_id": "req-404",
+            "details": {"field": "id", "error": "Invalid ID"},
         }
         mock_router.get("https://api.sourcecraft.dev/v1/notfound").mock(
             return_value=Response(404, json=error_data)
@@ -190,10 +190,10 @@ class TestClientErrorHandling:
         error = exc_info.value
         assert error.status_code == 404
         assert error.error_response is not None
-        assert error.error_response.error == "NotFound"
+        assert error.error_response.error_code == "NotFound"
         assert error.error_response.message == "Resource not found"
-        assert len(error.error_response.details) == 1
-        assert error.error_response.details[0].field == "id"
+        assert error.error_response.request_id == "req-404"
+        assert error.error_response.details == {"field": "id", "error": "Invalid ID"}
 
     @pytest.mark.asyncio
     async def test_http_status_error_without_json(
@@ -259,12 +259,10 @@ class TestClientErrorDetails:
     def test_api_error_with_error_response(self) -> None:
         """Test APIError with full error response."""
         error_response = ErrorResponse(
-            error="ValidationError",
+            error_code="ValidationError",
             message="Invalid input",
-            status_code=422,
-            details=[
-                ErrorDetail(field="email", message="Invalid email", code="invalid")
-            ],
+            request_id="req-123",
+            details={"field": "email", "error": "Invalid email"},
         )
         error = APIError(
             message="Validation failed",
@@ -274,7 +272,7 @@ class TestClientErrorDetails:
 
         assert error.error_response == error_response
         assert error.error_response is not None
-        assert error.error_response.error == "ValidationError"
+        assert error.error_response.error_code == "ValidationError"
 
 
 class TestClientResourceClients:
