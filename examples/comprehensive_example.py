@@ -47,10 +47,13 @@ async def comprehensive_example():
                 title="Test Issue from Comprehensive Example",
                 body="This issue was created as part of the comprehensive PySourceCraft example.",
             )
-            issue = await client.issues.create(
-                repo.owner.username, repo.name, issue_request
-            )
-            print(f"   Created issue #{issue.number}: {issue.title}")
+            if repo.owner is None:
+                print("   Skipped: Repository owner is None")
+            else:
+                issue = await client.issues.create(
+                    repo.owner.username, repo.name, issue_request
+                )
+                print(f"   Created issue #{issue.slug}: {issue.title}")
 
             # 4. Create a pull request
             print("\n4. Creating a pull request...")
@@ -63,10 +66,13 @@ async def comprehensive_example():
             )
             # Note: This will likely fail if the branches don't exist, but demonstrates the API call
             try:
-                pr = await client.pull_requests.create(
-                    repo.owner.username, repo.name, pr_request
-                )
-                print(f"   Created PR {pr.slug}: {pr.title}")
+                if repo.owner is None:
+                    print("   Skipped: Repository owner is None")
+                else:
+                    pr = await client.pull_requests.create(
+                        repo.owner.username, repo.name, pr_request
+                    )
+                    print(f"   Created PR {pr.slug}: {pr.title}")
             except APIError as e:
                 print(f"   Skipped PR creation (expected if branches don't exist): {e}")
 
@@ -79,15 +85,20 @@ async def comprehensive_example():
                 draft=False,
                 prerelease=False,
             )
-            release = await client.releases.create(
-                repo.owner.username, repo.name, release_request
-            )
-            print(f"   Created release: {release.name} (tag: {release.tag_name})")
+            if repo.owner is None:
+                print("   Skipped: Repository owner is None")
+            else:
+                release = await client.releases.create(
+                    repo.owner.username, repo.name, release_request
+                )
+                print(f"   Created release: {release.name} (tag: {release.tag_name})")
 
             # 6. List repositories to verify creation
             print("\n6. Listing repositories...")
             repos = await client.repositories.list(page=1, per_page=5)
-            test_repos = [r for r in repos.data if "pysourcecraft-test" in r.name]
+            test_repos = [
+                r for r in repos.repositories if "pysourcecraft-test" in r.name
+            ]
             print(f"   Found {len(test_repos)} test repositories")
 
             # 7. Clean up (optional - uncomment to actually delete)
