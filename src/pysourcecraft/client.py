@@ -4,6 +4,15 @@ from __future__ import annotations
 
 import httpx
 
+from pysourcecraft.clients import (
+    CICDClient,
+    IssuesClient,
+    OrganizationsClient,
+    PullRequestsClient,
+    ReleasesClient,
+    RepositoriesClient,
+    UsersClient,
+)
 from pysourcecraft.models import APIError, ErrorResponse
 
 
@@ -28,11 +37,23 @@ class SourceCraftClient:
         self.timeout = timeout
         self._client: httpx.AsyncClient | None = None
 
+        # Resource clients
+        self.issues = IssuesClient(self)
+        self.pull_requests = PullRequestsClient(self)
+        self.repositories = RepositoriesClient(self)
+        self.releases = ReleasesClient(self)
+        self.users = UsersClient(self)
+        self.organizations = OrganizationsClient(self)
+        self.cicd = CICDClient(self)
+
     @property
     def client(self) -> httpx.AsyncClient:
         """Get or create httpx client."""
         if self._client is None or self._client.is_closed:
-            headers = {}
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
             if self.api_token:
                 headers["Authorization"] = f"Bearer {self.api_token}"
             self._client = httpx.AsyncClient(
@@ -87,6 +108,10 @@ class SourceCraftClient:
     async def post(self, path: str, **kwargs) -> dict:
         """Make a POST request."""
         return await self._request("POST", path, **kwargs)
+
+    async def put(self, path: str, **kwargs) -> dict:
+        """Make a PUT request."""
+        return await self._request("PUT", path, **kwargs)
 
     async def patch(self, path: str, **kwargs) -> dict:
         """Make a PATCH request."""
