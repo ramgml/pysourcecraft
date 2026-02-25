@@ -5,8 +5,11 @@ Releases API usage examples.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
 from pysourcecraft.models import CreateReleaseRequest, UpdateReleaseRequest
+
+load_dotenv()
 
 
 async def list_releases():
@@ -56,7 +59,7 @@ async def get_release_details():
             print(f"Tag: {release.tag_name}")
             print(f"Draft: {release.draft}")
             print(f"Prerelease: {release.prerelease}")
-            print(f"Author: {release.author.username}")
+            print(f"Author: {release.author.slug}")
             print(f"Created: {release.created_at}")
             print(f"Published: {release.published_at}")
             print(
@@ -184,9 +187,12 @@ async def manage_release_assets():
             )
             print(f"Found {assets.total} assets for release {release_id}:")
             for asset in assets.data:
-                print(f"  - {asset.name} ({asset.size} bytes)")
-                print(f"    Download URL: {asset.browser_download_url}")
-                print(f"    Downloads: {asset.download_count}")
+                print(f"  - {asset.name}")
+                if asset.link:
+                    print(f"    Download URL: {asset.link}")
+                if asset.attachment:
+                    print(f"    Size: {asset.attachment.size}")
+                    print(f"    MIME Type: {asset.attachment.mime_type}")
                 print()
 
             # Upload asset (uncomment to test with actual file content)

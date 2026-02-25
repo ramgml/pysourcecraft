@@ -5,6 +5,7 @@ Comprehensive example showing all PySourceCraft API features.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
 from pysourcecraft.models import (
     CreateRepositoryRequest,
@@ -13,6 +14,8 @@ from pysourcecraft.models import (
     CreateReleaseRequest,
     RepoVisibility,
 )
+
+load_dotenv()
 
 
 async def comprehensive_example():

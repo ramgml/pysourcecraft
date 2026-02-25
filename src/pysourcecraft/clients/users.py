@@ -71,6 +71,17 @@ class UsersClient(BaseResourceClient):
         else:
             data = await self._get("/repos", params=params)
 
+        # API returns {"repositories": [...]} instead of paginated format
+        if "repositories" in data:
+            repos = [Repository.model_validate(repo) for repo in data["repositories"]]
+            return PaginatedResponse[Repository](
+                data=repos,
+                total=len(repos),
+                page=page,
+                per_page=per_page,
+                total_pages=1,
+            )
+
         return PaginatedResponse[Repository].model_validate(data)
 
     async def list_orgs(

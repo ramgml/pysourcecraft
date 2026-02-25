@@ -100,6 +100,10 @@ async def create_and_update_repository():
                 visibility=RepoVisibility.PUBLIC,  # Use enum
             )
 
+            if new_repo.owner is None:
+                print("✗ Cannot update: repository owner is None")
+                return
+
             updated_repo = await client.repositories.update(
                 new_repo.owner.username,  # Use username instead of login
                 new_repo.name,

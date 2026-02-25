@@ -5,8 +5,11 @@ Pull Requests API usage examples.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
 from pysourcecraft.models import CreatePullRequestRequest, UpdatePullRequestRequest
+
+load_dotenv()
 
 
 async def list_pull_requests():

@@ -5,7 +5,10 @@ Error handling examples for PySourceCraft API client.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
+
+load_dotenv()
 
 
 async def basic_error_handling():
@@ -73,33 +76,57 @@ async def handle_specific_http_errors():
 
 async def handle_validation_errors():
     """Example: Handle validation errors when creating resources."""
+    from pydantic import ValidationError as PydanticValidationError
+
     api_token = os.getenv("SOURCECRAFT_API_TOKEN")
     if not api_token:
         print("Please set SOURCECRAFT_API_TOKEN environment variable")
         return
 
     async with SourceCraftClient(api_token=api_token) as client:
+        # First, demonstrate client-side Pydantic validation (happens before API call)
+        print("  Demonstrating client-side validation (Pydantic):")
         try:
-            # Try to create a repository with invalid data
             from pysourcecraft.models import CreateRepositoryRequest, RepoVisibility
 
-            create_request = CreateRepositoryRequest(
-                name="",  # Invalid: empty name
+            # This will fail client-side validation before any API call is made
+            CreateRepositoryRequest(
+                name="",  # Invalid: empty name (fails min_length validation)
                 description="This should fail due to validation",
                 visibility=RepoVisibility.PUBLIC,
             )
 
-            repo = await client.repositories.create(create_request)
-            print(f"Created repository: {repo.name}")
+        except PydanticValidationError as e:
+            print("  ✗ Client-side validation error (before API call):")
+            for error in e.errors():
+                field = ".".join(str(x) for x in error["loc"])
+                print(f"    - {field}: {error['msg']}")
+        print()
+
+        # Now demonstrate API-side validation errors (400/422 responses)
+        print("  Demonstrating API-side validation errors:")
+        try:
+            from pysourcecraft.models import CreateRepositoryRequest, RepoVisibility
+
+            # Use a valid request that might trigger API validation
+            # For demonstration, we'll try to access a non-existent resource
+            # which will return a 404, but shows API error handling
+            repo = await client.repositories.get(
+                "nonexistent-user-12345", "nonexistent-repo-67890"
+            )
+            print(f"  Repository: {repo.name}")
 
         except APIError as e:
-            if e.status_code == 422 and e.error_response:
-                print("✗ Validation failed:")
+            if e.status_code == 404:
+                print("  ✗ API Error (404): Resource not found")
+                print("    This demonstrates API-side error handling")
+            elif e.status_code == 422 and e.error_response:
+                print("  ✗ Validation failed (422):")
                 if e.error_response.details:
                     for key, value in e.error_response.details.items():
-                        print(f"  - {key}: {value}")
+                        print(f"    - {key}: {value}")
             else:
-                print(f"✗ Other error: {e}")
+                print(f"  ✗ API Error: {e}")
 
 
 async def handle_network_errors():

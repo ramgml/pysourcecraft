@@ -5,8 +5,11 @@ Issues API usage examples.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
 from pysourcecraft.models import CreateIssueRequest, UpdateIssueRequest
+
+load_dotenv()
 
 
 async def list_issues():

@@ -5,7 +5,10 @@ Basic client initialization and usage examples.
 import asyncio
 import os
 
-from pysourcecraft import SourceCraftClient
+from dotenv import load_dotenv
+from pysourcecraft import SourceCraftClient, APIError
+
+load_dotenv()
 
 
 async def basic_client_initialization():
@@ -31,8 +34,11 @@ async def context_manager_usage():
     """Example 2: Using client as async context manager."""
     async with SourceCraftClient(api_token="your-api-token") as client:
         # Client automatically closes when exiting context
-        user = await client.users.get_current()
-        print(f"Authenticated as: {user.username}")
+        try:
+            user = await client.users.get_current()
+            print(f"Authenticated as: {user.username}")
+        except APIError as e:
+            print(f"Note: API call failed as expected with invalid token: {e.message}")
 
 
 async def main():

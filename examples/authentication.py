@@ -5,7 +5,10 @@ Authentication setup examples.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
+
+load_dotenv()
 
 
 async def token_authentication():
@@ -21,8 +24,10 @@ async def token_authentication():
             # Test authentication by getting current user
             user = await client.users.get_current()
             print(f"✓ Successfully authenticated as: {user.username}")
-            print(f"  Email: {user.email}")
-            print(f"  Name: {user.name}")
+            if user.display_name:
+                print(f"  Display Name: {user.display_name}")
+            if user.bio:
+                print(f"  Bio: {user.bio}")
         except APIError as e:
             if e.status_code == 401:
                 print("✗ Authentication failed: Invalid or missing API token")

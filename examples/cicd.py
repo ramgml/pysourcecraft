@@ -5,7 +5,10 @@ CI/CD API usage examples.
 import asyncio
 import os
 
+from dotenv import load_dotenv
 from pysourcecraft import SourceCraftClient, APIError
+
+load_dotenv()
 
 
 async def list_workflows():
