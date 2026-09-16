@@ -55,7 +55,7 @@ class Release(BaseModel):
 
     id: str = Field(description="Release ID")
     repo_id: str = Field(description="Repository ID")
-    author: UserEmbedded = Field(description="Release author")
+    author: UserEmbedded | None = Field(None, description="Release author")
     tag: str = Field(description="Release tag (also serves as its slug)")
     hash: str = Field(description="Git hash")
     title: str | None = Field(None, description="Release title")
