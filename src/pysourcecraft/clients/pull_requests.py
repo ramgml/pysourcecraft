@@ -130,6 +130,38 @@ class PullRequestsClient(BaseResourceClient):
             json={"squash": squash},
         )
 
+    async def publish(self, owner: str, repo: str, pull_number: int) -> PullRequest:
+        """Publish a draft pull request.
+
+        Endpoint: POST /repos/{owner}/{repo}/pulls/{n}/publish ->
+        the updated PullRequest (verified live).
+        """
+        data = await self._post(
+            f"/repos/{owner}/{repo}/pulls/{pull_number}/publish", json={}
+        )
+        return PullRequest.model_validate(data)
+
+    async def draft(self, owner: str, repo: str, pull_number: int) -> PullRequest:
+        """Convert a pull request back to draft.
+
+        Endpoint: POST /repos/{owner}/{repo}/pulls/{n}/draft.
+        """
+        data = await self._post(
+            f"/repos/{owner}/{repo}/pulls/{pull_number}/draft", json={}
+        )
+        return PullRequest.model_validate(data)
+
+    async def discard(self, owner: str, repo: str, pull_number: int) -> PullRequest:
+        """Discard (close) a pull request.
+
+        Endpoint: POST /repos/{owner}/{repo}/pulls/{n}/discard
+        (verified live, returns the updated PullRequest).
+        """
+        data = await self._post(
+            f"/repos/{owner}/{repo}/pulls/{pull_number}/discard", json={}
+        )
+        return PullRequest.model_validate(data)
+
     async def list_reviews(
         self,
         owner: str,
