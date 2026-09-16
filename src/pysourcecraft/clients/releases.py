@@ -146,6 +146,14 @@ class ReleasesClient(BaseResourceClient):
         )
         return Release.model_validate(data)
 
+    async def discard_by_tag(self, owner: str, repo: str, tag: str) -> Release:
+        """Discard a release by tag (POST /releases/tag/{tag}/discard)."""
+        data = await self._post(
+            f"/repos/{owner}/{repo}/releases/tag/{tag}/discard",
+            json={},
+        )
+        return Release.model_validate(data)
+
     async def delete(self, owner: str, repo: str, release_id: str) -> None:
         """Delete a release.
 
