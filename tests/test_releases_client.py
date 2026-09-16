@@ -199,8 +199,8 @@ class TestReleasesClientUpdate:
         mock_release_data: dict[str, Any],
     ) -> None:
         """Test updating a release."""
-        mock_router.patch(
-            "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/releases/release-001"
+        route = mock_router.patch(
+            "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/releases/tag/release-001"
         ).mock(return_value=Response(200, json=mock_release_data))
 
         request = UpdateReleaseRequest(name="Updated Release Name")
@@ -209,6 +209,7 @@ class TestReleasesClientUpdate:
         )
 
         assert isinstance(result, Release)
+        assert route.calls.last.request.read() == (b'{"title":"Updated Release Name"}')
 
 
 class TestReleasesClientDelete:

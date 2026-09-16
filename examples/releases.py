@@ -140,7 +140,7 @@ async def create_and_update_release():
                 name="Test Release from PySourceCraft",
                 body="This release was created using the PySourceCraft API client.",
                 draft=True,
-                prerelease=False,
+                # prerelease: not part of the SourceCraft release API body,
             )
 
             new_release = await client.releases.create(owner, repo_name, create_request)

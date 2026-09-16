@@ -93,7 +93,7 @@ class ReleasesClient(BaseResourceClient):
         """
         data = await self._post(
             f"/repos/{owner}/{repo}/releases",
-            json=request.model_dump(exclude_none=True),
+            json=request.model_dump(exclude_none=True, by_alias=True),
         )
         return Release.model_validate(data)
 
@@ -102,18 +102,42 @@ class ReleasesClient(BaseResourceClient):
     ) -> Release:
         """Update a release.
 
+        The API has no id-based PATCH; updates go by tag
+        (PATCH /repos/{o}/{r}/releases/tag/{tag}, UpdateReleaseBody
+        {title, release_notes}). ``release_id`` is accepted as a tag
+        for backward compatibility.
+
         Args:
             owner: Repository owner
             repo: Repository name
-            release_id: Release ID
+            release_id: Release tag (legacy param name kept)
             request: Release update request
 
         Returns:
             Updated release
         """
         data = await self._patch(
-            f"/repos/{owner}/{repo}/releases/{release_id}",
-            json=request.model_dump(exclude_none=True),
+            f"/repos/{owner}/{repo}/releases/tag/{release_id}",
+            json=request.model_dump(exclude_none=True, by_alias=True),
+        )
+        return Release.model_validate(data)
+
+    async def update_by_tag(
+        self, owner: str, repo: str, tag: str, request: UpdateReleaseRequest
+    ) -> Release:
+        """Update a release by tag (PATCH /releases/tag/{tag})."""
+        data = await self._patch(
+            f"/repos/{owner}/{repo}/releases/tag/{tag}",
+            json=request.model_dump(exclude_none=True, by_alias=True),
+        )
+        return Release.model_validate(data)
+
+    async def publish_by_tag(self, owner: str, repo: str, tag: str) -> Release:
+        """Publish a draft release by tag
+        (POST /releases/tag/{tag}/publish)."""
+        data = await self._post(
+            f"/repos/{owner}/{repo}/releases/tag/{tag}/publish",
+            json={},
         )
         return Release.model_validate(data)
 

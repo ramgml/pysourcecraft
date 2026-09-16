@@ -87,15 +87,25 @@ class BaseResourceClient:
     ) -> dict:
         """Build pagination parameters for API requests.
 
+        The API is token-based (sourcecraft.swagger.json: `page_size`,
+        `page_token`); `page`/`per_page` are not recognized by the server.
+
         Args:
-            params: Existing parameters dictionary to extend (optional)
-            page: Page number (1-indexed, default: 1)
+            params: Existing parameters dictionary to extend (optional);
+                may carry `page_token` from a previous response
+            page: Page number (1-indexed, default: 1) — used only when
+                no explicit page_token is given (numeric emulation)
             per_page: Number of items per page (default: 30, max: 100)
 
         Returns:
             Dictionary containing pagination parameters
         """
         result = params.copy() if params else {}
-        result["page"] = page
-        result["per_page"] = per_page
+        result.pop("page", None)
+        token = result.pop("page_token", None)
+        result["page_size"] = per_page
+        if not token and page and page > 1:
+            token = str(page)
+        if token:
+            result["page_token"] = token
         return result

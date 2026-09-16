@@ -8,6 +8,7 @@ from pysourcecraft.models import (
     MergePullRequestRequest,
     PRCheck,
     PRFilters,
+    PRMergeMethod,
     PRReview,
     PaginatedResponse,
     PullRequest,
@@ -107,19 +108,26 @@ class PullRequestsClient(BaseResourceClient):
     ) -> dict:
         """Merge a pull request.
 
+        API contract (verified live + swagger MergeParameters):
+        POST /repos/{owner}/{repo}/pulls/{n}/merge with
+        ``{"squash": bool}`` -> 202 with an operation id. (The old PUT
+        with commit_title/commit_message/method returned 405.)
+
         Args:
             owner: Repository owner
             repo: Repository name
             pull_number: Pull request number
-            request: Optional merge request
+            request: Optional merge request; only its ``method`` is
+                mapped (SQUASH -> squash=true)
 
         Returns:
-            Merge result
+            Merge operation payload (operation id / status)
         """
-        json_data = request.model_dump(exclude_none=True) if request else {}
-        return await self._put(
+        squash = bool(request and request.method == PRMergeMethod.SQUASH)
+        return await self._request(
+            "POST",
             f"/repos/{owner}/{repo}/pulls/{pull_number}/merge",
-            json=json_data,
+            json={"squash": squash},
         )
 
     async def list_reviews(

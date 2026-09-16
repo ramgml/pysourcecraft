@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 
 T = TypeVar("T")
 
@@ -38,23 +38,74 @@ class PaginationParams(BaseModel):
 
 
 class PaginatedResponse(BaseModel, Generic[T]):
-    """Paginated response wrapper."""
+    """Paginated response wrapper.
 
-    data: list[T] = Field(description="List of items")
-    total: int = Field(ge=0, description="Total number of items")
-    page: int = Field(ge=1, description="Current page number")
-    per_page: int = Field(ge=1, description="Items per page")
-    total_pages: int = Field(ge=0, description="Total number of pages")
+    The API returns the SourceCraft list shape: ``{"<items>": [...],
+    "next_page_token": "..."}`` (sourcecraft.swagger.json, e.g.
+    ListRepositoryPullRequestsResponse). The legacy page-numbered shape
+    (``data``/``total``/``page``/``per_page``/``total_pages``) is accepted
+    for backward compatibility but is never produced by the live API.
+    """
+
+    data: list[T] = Field(default_factory=list, description="List of items")
+    next_page_token: str | None = Field(
+        None, description="Token for the next page; None/empty = last page"
+    )
+    # Legacy page-numbered fields (kept for backward compatibility with
+    # code that reads them; the live API does not send them).
+    total: int | None = Field(None, ge=0)
+    page: int | None = Field(None, ge=1)
+    per_page: int | None = Field(None, ge=1)
+    total_pages: int | None = Field(None, ge=0)
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def _fold_resource_items(cls, values: Any, handler: Any) -> PaginatedResponse[T]:
+        """Accept the SourceCraft list shape: the items array arrives under
+        a resource-specific key (pull_requests, releases, issues, ...);
+        fold any list value into ``data`` before validation."""
+        if isinstance(values, dict) and "data" not in values:
+            items = None
+            for key in (
+                "pull_requests",
+                "releases",
+                "issues",
+                "repositories",
+                "workflows",
+                "workflow_runs",
+                "pipelines",
+                "artifacts",
+                "comments",
+                "branches",
+                "users",
+                "organizations",
+            ):
+                v = values.get(key)
+                if isinstance(v, list):
+                    items = v
+                    break
+            if items is not None:
+                values = dict(values)
+                values["data"] = items
+        return handler(values)
 
     @property
     def has_next(self) -> bool:
-        """Check if there is a next page."""
-        return self.page < self.total_pages
+        """Check if there is a next page.
+
+        Token-based API: a non-empty next_page_token means more pages.
+        Legacy page-numbered payloads fall back to page/total_pages.
+        """
+        if self.next_page_token:
+            return True
+        if self.page is not None and self.total_pages is not None:
+            return self.page < self.total_pages
+        return False
 
     @property
     def has_prev(self) -> bool:
-        """Check if there is a previous page."""
-        return self.page > 1
+        """Check if there is a previous page (legacy numbered payloads)."""
+        return self.page is not None and self.page > 1
 
 
 class ErrorResponse(BaseModel):

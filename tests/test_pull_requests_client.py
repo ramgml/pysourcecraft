@@ -173,19 +173,19 @@ class TestPullRequestsClientMerge:
         mock_router: respx.MockRouter,
     ) -> None:
         """Test merging a pull request."""
-        mock_router.put(
+        route = mock_router.post(
             "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/pulls/1/merge"
         ).mock(
             return_value=Response(
-                200,
-                json={"sha": "merge-commit-sha", "merged": True, "message": "Merged"},
+                202,
+                json={"operation_id": "op-1", "status": "in_progress"},
             )
         )
 
         result = await client.pull_requests.merge("testuser", "test-repo", 1)
 
-        assert result["merged"] is True
-        assert result["sha"] == "merge-commit-sha"
+        assert result["operation_id"] == "op-1"
+        assert route.calls.last.request.read() == b'{"squash":false}'
 
     @pytest.mark.asyncio
     async def test_merge_with_method(
@@ -194,12 +194,12 @@ class TestPullRequestsClientMerge:
         mock_router: respx.MockRouter,
     ) -> None:
         """Test merging with specific method."""
-        mock_router.put(
+        route = mock_router.post(
             "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/pulls/1/merge"
         ).mock(
             return_value=Response(
-                200,
-                json={"sha": "merge-commit-sha", "merged": True, "message": "Merged"},
+                202,
+                json={"operation_id": "op-2", "status": "in_progress"},
             )
         )
 
@@ -208,6 +208,7 @@ class TestPullRequestsClientMerge:
             commit_title="Squashed commit",
         )
         await client.pull_requests.merge("testuser", "test-repo", 1, request)
+        assert route.calls.last.request.read() == b'{"squash":true}'
 
 
 class TestPullRequestsClientReviews:

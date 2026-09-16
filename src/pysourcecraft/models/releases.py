@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from pysourcecraft.models.base import BaseModel
 from pysourcecraft.models.users import UserEmbedded
@@ -116,30 +116,70 @@ class ReleaseAuthor(UserEmbedded):
 
 
 class CreateReleaseRequest(BaseModel):
-    """Request to create a release."""
+    """Request to create a release.
 
-    tag_name: str = Field(min_length=1, description="Git tag name")
-    name: str | None = Field(None, description="Release name")
-    body: str | None = Field(None, description="Release notes")
-    draft: bool = Field(default=False, description="Create as draft")
-    prerelease: bool = Field(default=False, description="Mark as prerelease")
-    target_commitish: str | None = Field(None, description="Target commit/branch")
-    discussion_category_name: str | None = Field(
-        None, description="Create discussion in this category"
+    Body per sourcecraft.swagger.json CreateReleaseBody:
+    ``{tag, target_branch, title, release_notes, publish}``.
+    GitHub-style names (name/body/draft/target_commitish/...) are accepted
+    via aliases but are sent in the API shape.
+    """
+
+    tag_name: str = Field(min_length=1, alias="tag", serialization_alias="tag")
+    name: str | None = Field(
+        None,
+        alias="title",
+        serialization_alias="title",
+        description="Release name",
     )
-    generate_release_notes: bool = Field(
-        default=False, description="Auto-generate release notes"
+    body: str | None = Field(
+        None,
+        alias="release_notes",
+        serialization_alias="release_notes",
+        description="Release notes",
     )
+    draft: bool | None = Field(
+        None, description="Create as draft (API wants publish=true when not draft)"
+    )
+    publish: bool | None = Field(
+        None, description="Publish immediately instead of creating a draft"
+    )
+    target_commitish: str | None = Field(
+        None,
+        alias="target_branch",
+        serialization_alias="target_branch",
+        description="Target commit/branch",
+    )
+
+    @model_validator(mode="after")
+    def _map_draft_to_publish(self) -> CreateReleaseRequest:
+        # GitHub-style `draft=not publish` (used by the CLI) maps to the
+        # API's `publish` flag.
+        if self.publish is None and self.draft is not None:
+            self.publish = not self.draft
+        if self.publish is None:
+            self.publish = False
+        return self
 
 
 class UpdateReleaseRequest(BaseModel):
-    """Request to update a release."""
+    """Request to update a release.
+
+    Body per sourcecraft.swagger.json UpdateReleaseBody:
+    ``{title, release_notes}``.
+    """
 
     tag_name: str | None = Field(None, min_length=1, description="Git tag name")
-    name: str | None = Field(None, description="Release name")
-    body: str | None = Field(None, description="Release notes")
-    draft: bool | None = Field(None, description="Draft status")
-    prerelease: bool | None = Field(None, description="Prerelease status")
-    discussion_category_name: str | None = Field(
-        None, description="Create discussion in this category"
+    name: str | None = Field(
+        None,
+        alias="title",
+        validation_alias="title",
+        serialization_alias="title",
+        description="Release name",
+    )
+    body: str | None = Field(
+        None,
+        alias="release_notes",
+        validation_alias="release_notes",
+        serialization_alias="release_notes",
+        description="Release notes",
     )
