@@ -83,7 +83,11 @@ class BaseResourceClient:
         return await self._client.delete(path, **kwargs)
 
     def _paginated_params(
-        self, params: dict | None = None, page: int = 1, per_page: int = 30
+        self,
+        params: dict | None = None,
+        page: int = 1,
+        per_page: int = 30,
+        explicit_token: str | None = None,
     ) -> dict:
         """Build pagination parameters for API requests.
 
@@ -96,13 +100,15 @@ class BaseResourceClient:
             page: Page number (1-indexed, default: 1) — used only when
                 no explicit page_token is given (numeric emulation)
             per_page: Number of items per page (default: 30, max: 100)
+            explicit_token: Server pagination token taking precedence
+                over any token in ``params`` and over numeric emulation
 
         Returns:
             Dictionary containing pagination parameters
         """
         result = params.copy() if params else {}
         result.pop("page", None)
-        token = result.pop("page_token", None)
+        token = explicit_token or result.pop("page_token", None)
         result["page_size"] = per_page
         if not token and page and page > 1:
             token = str(page)

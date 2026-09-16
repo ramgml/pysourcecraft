@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from pysourcecraft.clients.base import BaseResourceClient
 from pysourcecraft.models import (
+    Issue,
     OrgMembership,
     Organization,
     PaginatedResponse,
+    PullRequest,
     Repository,
     User,
 )
@@ -108,6 +110,44 @@ class UsersClient(BaseResourceClient):
             data = await self._get("/user/orgs", params=params)
 
         return PaginatedResponse[Organization].model_validate(data)
+
+    async def list_my_issues(
+        self,
+        page_size: int = 30,
+        page_token: str | None = None,
+    ) -> PaginatedResponse[Issue]:
+        """List issues assigned to or created by the authenticated user.
+
+        Endpoint: GET /me/issues (page_size/page_token,
+        ListIssuesAssignedToAuthenticatedUserResponse: issues,
+        next_page_token).
+        """
+        params = self._paginated_params(
+            per_page=page_size, explicit_token=page_token
+        )
+        data = await self._get("/me/issues", params=params)
+        return PaginatedResponse[Issue].model_validate(data)
+
+    async def list_pull_requests(
+        self,
+        username: str,
+        role: str | None = None,
+        page_size: int = 30,
+        page_token: str | None = None,
+    ) -> PaginatedResponse[PullRequest]:
+        """List pull requests of a user.
+
+        Endpoint: GET /users/{user_slug}/pulls (role, page_size,
+        page_token; ListRepositoryPullRequestsResponse: pull_requests,
+        next_page_token).
+        """
+        params = self._paginated_params(
+            per_page=page_size, explicit_token=page_token
+        )
+        if role:
+            params["role"] = role
+        data = await self._get(f"/users/{username}/pulls", params=params)
+        return PaginatedResponse[PullRequest].model_validate(data)
 
 
 class OrganizationsClient(BaseResourceClient):

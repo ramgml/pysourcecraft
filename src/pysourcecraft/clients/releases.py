@@ -21,19 +21,24 @@ class ReleasesClient(BaseResourceClient):
         repo: str,
         page: int = 1,
         per_page: int = 30,
+        page_size: int | None = None,
+        page_token: str | None = None,
     ) -> PaginatedResponse[Release]:
         """List releases in a repository.
 
         Args:
             owner: Repository owner
             repo: Repository name
-            page: Page number
-            per_page: Items per page
-
-        Returns:
-            Paginated list of releases
+            page: Page number (1-indexed numeric emulation)
+            per_page: Items per page (sent as page_size)
+            page_size: Explicit page size (overrides per_page)
+            page_token: Server pagination token
         """
-        params = self._paginated_params(page=page, per_page=per_page)
+        params = self._paginated_params(
+            page=page,
+            per_page=page_size if page_size is not None else per_page,
+            explicit_token=page_token,
+        )
         data = await self._get(f"/repos/{owner}/{repo}/releases", params=params)
         return PaginatedResponse[Release].model_validate(data)
 
