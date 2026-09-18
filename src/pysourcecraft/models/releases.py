@@ -155,7 +155,7 @@ class CreateReleaseRequest(BaseModel):
     )
     target_commitish: str | None = Field(
         None,
-        alias="target_branch",
+        validation_alias=AliasChoices("target_commitish", "target_branch"),
         serialization_alias="target_branch",
         description="Target commit/branch",
     )
