@@ -174,9 +174,5 @@ pyrightconfig.json
 .cache
 .resourses
 
-
-# bv (beads viewer) local config and caches
-.bv/
-
 # VS Code local files
 .roomodes
