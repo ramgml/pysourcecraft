@@ -30,7 +30,7 @@ async def main():
         # Get current user
         user = await client.users.get_current()
         print(f"Hello, {user.username}!")
-        
+
         # List repositories
         repos = await client.repositories.list()
         for repo in repos.data:
@@ -129,7 +129,7 @@ The main client provides access to all resource-specific clients and handles HTT
 **HTTP Methods:**
 
 - `get(path, **kwargs)`: Make GET request
-- `post(path, **kwargs)`: Make POST request  
+- `post(path, **kwargs)`: Make POST request
 - `put(path, **kwargs)`: Make PUT request
 - `patch(path, **kwargs)`: Make PATCH request
 - `delete(path, **kwargs)`: Make DELETE request
@@ -184,34 +184,22 @@ Manage pull requests and code reviews.
 
 ### CI/CD Client (`client.cicd`)
 
-Manage workflows, pipelines, and artifacts.
+Inspect and trigger CI/CD runs (token-paginated).
 
-**Workflows:**
+**Runs:**
 
-- `list_workflows(owner, repo, page=1, per_page=30)`: List workflows
-- `get_workflow(owner, repo, workflow_id)`: Get workflow details
+- `list_runs(owner, repo, page_size=30, page_token=None)`: List CI/CD runs (`RunList`)
+- `get_run(owner, repo, run_slug)`: Get run details with workflows/tasks/cubes
+- `run_workflows(owner, repo, request)`: Run workflows (`RunWorkflowsRequest`)
+- `get_workflow(owner, repo, run_slug, workflow_slug)`: Get a workflow launch in a run
 
-**Workflow Runs:**
+**Logs:**
 
-- `list_workflow_runs(owner, repo, workflow_id=None, branch=None, page=1, per_page=30)`: List workflow runs
-- `get_workflow_run(owner, repo, run_id)`: Get workflow run details
-- `cancel_workflow_run(owner, repo, run_id)`: Cancel workflow run
-- `rerun_workflow_run(owner, repo, run_id)`: Re-run workflow run
-
-**Pipelines:**
-
-- `list_pipelines(owner, repo, page=1, per_page=30)`: List pipelines
-- `get_pipeline(owner, repo, pipeline_id)`: Get pipeline details
-- `create_pipeline(owner, repo, ref, variables=None)`: Create new pipeline
-- `retry_pipeline(owner, repo, pipeline_id)`: Retry failed pipeline
-- `cancel_pipeline(owner, repo, pipeline_id)`: Cancel pipeline
+- `get_cube_logs(owner, repo, run_slug, workflow_slug, task_slug, cube_slug, page=1)`: Get cube logs
 
 **Artifacts:**
 
-- `list_artifacts(owner, repo, run_id=None, page=1, per_page=30)`: List artifacts
-- `get_artifact(owner, repo, artifact_id)`: Get artifact details
-- `delete_artifact(owner, repo, artifact_id)`: Delete artifact
-- `download_artifact(owner, repo, artifact_id)`: Download artifact content
+- `get_artifacts(owner, repo, run_slug, workflow_slug, task_slug, cube_slug)`: Get cube artifacts (temporary download URLs)
 
 ### Releases Client (`client.releases`)
 
@@ -275,15 +263,15 @@ Example pagination handling:
 async def get_all_repos(client):
     all_repos = []
     page = 1
-    
+
     while True:
         response = await client.repositories.list(page=page, per_page=100)
         all_repos.extend(response.data)
-        
+
         if not response.has_next:
             break
         page += 1
-    
+
     return all_repos
 ```
 

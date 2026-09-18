@@ -59,7 +59,7 @@ async def get_release_details():
             print(f"Tag: {release.tag_name}")
             print(f"Draft: {release.draft}")
             print(f"Prerelease: {release.prerelease}")
-            print(f"Author: {release.author.slug}")
+            print(f"Author: {release.author.slug if release.author else 'Unknown'}")
             print(f"Created: {release.created_at}")
             print(f"Published: {release.published_at}")
             print(
@@ -139,8 +139,7 @@ async def create_and_update_release():
                 tag_name="v1.0.0-test",
                 name="Test Release from PySourceCraft",
                 body="This release was created using the PySourceCraft API client.",
-                draft=True,
-                # prerelease: not part of the SourceCraft release API body,
+                publish=False,
             )
 
             new_release = await client.releases.create(owner, repo_name, create_request)
@@ -152,7 +151,6 @@ async def create_and_update_release():
             update_request = UpdateReleaseRequest(
                 name="Updated Test Release from PySourceCraft",
                 body="This release was updated using the PySourceCraft API client.",
-                draft=False,
             )
 
             updated_release = await client.releases.update(

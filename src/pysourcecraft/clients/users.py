@@ -122,9 +122,7 @@ class UsersClient(BaseResourceClient):
         ListIssuesAssignedToAuthenticatedUserResponse: issues,
         next_page_token).
         """
-        params = self._paginated_params(
-            per_page=page_size, explicit_token=page_token
-        )
+        params = self._paginated_params(per_page=page_size, explicit_token=page_token)
         data = await self._get("/me/issues", params=params)
         return PaginatedResponse[Issue].model_validate(data)
 
@@ -141,9 +139,7 @@ class UsersClient(BaseResourceClient):
         page_token; ListRepositoryPullRequestsResponse: pull_requests,
         next_page_token).
         """
-        params = self._paginated_params(
-            per_page=page_size, explicit_token=page_token
-        )
+        params = self._paginated_params(per_page=page_size, explicit_token=page_token)
         if role:
             params["role"] = role
         data = await self._get(f"/users/{username}/pulls", params=params)

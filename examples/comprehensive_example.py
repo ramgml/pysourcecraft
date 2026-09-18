@@ -85,8 +85,7 @@ async def comprehensive_example():
                 tag_name="v1.0.0",
                 name="Version 1.0.0",
                 body="Initial release created by PySourceCraft examples.",
-                draft=False,
-                # prerelease: not part of the SourceCraft release API body,
+                publish=True,
             )
             if repo.owner is None:
                 print("   Skipped: Repository owner is None")

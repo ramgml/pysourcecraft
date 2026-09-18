@@ -42,10 +42,9 @@ from pysourcecraft.models import (
     Plan,
     UserType,
     # CI/CD
-    PipelineStatus,
-    WorkflowConclusion,
-    WorkflowEvent,
-    WorkflowState,
+    ArtifactStatus,
+    EventType,
+    RunStatus,
 )
 
 
@@ -417,30 +416,29 @@ class TestUserModels:
 class TestCICDModels:
     """Tests for CI/CD models."""
 
-    def test_workflow_state_enum(self) -> None:
-        """Test workflow state enum."""
-        assert WorkflowState.QUEUED == "queued"
-        assert WorkflowState.IN_PROGRESS == "in_progress"
-        assert WorkflowState.COMPLETED == "completed"
+    def test_run_status_enum(self) -> None:
+        """Test run status enum (swagger Run.Status)."""
+        assert RunStatus.CREATED == "created"
+        assert RunStatus.PREPARED == "prepared"
+        assert RunStatus.PROCESSING == "processing"
+        assert RunStatus.SUCCESS == "success"
+        assert RunStatus.FAILED == "failed"
+        assert RunStatus.CANCELED == "canceled"
+        assert RunStatus.TIMEOUT == "timeout"
 
-    def test_workflow_conclusion_enum(self) -> None:
-        """Test workflow conclusion enum."""
-        assert WorkflowConclusion.SUCCESS == "success"
-        assert WorkflowConclusion.FAILURE == "failure"
-        assert WorkflowConclusion.CANCELLED == "cancelled"
+    def test_event_type_enum(self) -> None:
+        """Test event type enum (swagger EventType)."""
+        assert EventType.PUSH == "push"
+        assert EventType.PR_UPDATE == "pr_update"
+        assert EventType.MANUAL == "manual"
+        assert EventType.RESTART == "restart"
 
-    def test_workflow_event_enum(self) -> None:
-        """Test workflow event enum."""
-        assert WorkflowEvent.PUSH == "push"
-        assert WorkflowEvent.PULL_REQUEST == "pull_request"
-        assert WorkflowEvent.WORKFLOW_DISPATCH == "workflow_dispatch"
-
-    def test_pipeline_status_enum(self) -> None:
-        """Test pipeline status enum."""
-        assert PipelineStatus.PENDING == "pending"
-        assert PipelineStatus.RUNNING == "running"
-        assert PipelineStatus.SUCCESS == "success"
-        assert PipelineStatus.FAILED == "failed"
+    def test_artifact_status_enum(self) -> None:
+        """Test artifact status enum (swagger ArtifactStatus)."""
+        assert ArtifactStatus.REGISTERED == "registered"
+        assert ArtifactStatus.SUCCESS == "success"
+        assert ArtifactStatus.FAILED == "failed"
+        assert ArtifactStatus.MISSING == "missing"
 
 
 # =============================================================================

@@ -4,290 +4,136 @@ from __future__ import annotations
 
 from pysourcecraft.clients.base import BaseResourceClient
 from pysourcecraft.models import (
-    LegacyArtifact,
-    PaginatedResponse,
-    Pipeline,
-    Workflow,
-    WorkflowRun,
+    CIWorkflow,
+    GetCubeArtifactsResponse,
+    GetCubeLogsResponse,
+    Run,
+    RunList,
+    RunWorkflowsRequest,
 )
 
 
 class CICDClient(BaseResourceClient):
-    """Client for CI/CD API."""
+    """Client for the CI/CD API (sourcecraft.swagger.json: `/cicd/...`)."""
 
-    # Workflows
-    async def list_workflows(
+    # Runs
+    async def list_runs(
         self,
         owner: str,
         repo: str,
-        page: int = 1,
-        per_page: int = 30,
-    ) -> PaginatedResponse[Workflow]:
-        """List workflows in a repository.
+        page_size: int = 30,
+        page_token: str | None = None,
+    ) -> RunList:
+        """List CI/CD runs in a repository.
 
         Args:
-            owner: Repository owner
-            repo: Repository name
-            page: Page number
-            per_page: Items per page
-
-        Returns:
-            Paginated list of workflows
+            owner: Repository owner (org/user slug)
+            repo: Repository slug
+            page_size: Maximum number of runs to return
+            page_token: Pagination token from a previous response
         """
-        params = self._paginated_params(page=page, per_page=per_page)
-        data = await self._get(f"/repos/{owner}/{repo}/workflows", params=params)
-        return PaginatedResponse[Workflow].model_validate(data)
+        params = self._paginated_params(per_page=page_size, explicit_token=page_token)
+        data = await self._get(f"/repos/{owner}/{repo}/cicd/runs", params=params)
+        return RunList.model_validate(data)
 
-    async def get_workflow(self, owner: str, repo: str, workflow_id: str) -> Workflow:
-        """Get a single workflow.
+    async def get_run(self, owner: str, repo: str, run_slug: str) -> Run:
+        """Get a single CI/CD run.
 
         Args:
-            owner: Repository owner
-            repo: Repository name
-            workflow_id: Workflow ID
-
-        Returns:
-            Workflow details
+            owner: Repository owner (org/user slug)
+            repo: Repository slug
+            run_slug: Run counter serves as a slug
         """
-        data = await self._get(f"/repos/{owner}/{repo}/workflows/{workflow_id}")
-        return Workflow.model_validate(data)
+        data = await self._get(f"/repos/{owner}/{repo}/cicd/runs/{run_slug}")
+        return Run.model_validate(data)
 
-    # Workflow Runs
-    async def list_workflow_runs(
+    async def run_workflows(
         self,
         owner: str,
         repo: str,
-        workflow_id: str | None = None,
-        branch: str | None = None,
-        page: int = 1,
-        per_page: int = 30,
-    ) -> PaginatedResponse[WorkflowRun]:
-        """List workflow runs.
+        request: RunWorkflowsRequest,
+    ) -> Run:
+        """Run CI workflows in a repository.
 
         Args:
-            owner: Repository owner
-            repo: Repository name
-            workflow_id: Optional workflow ID filter
-            branch: Optional branch filter
-            page: Page number
-            per_page: Items per page
-
-        Returns:
-            Paginated list of workflow runs
+            owner: Repository owner (org/user slug)
+            repo: Repository slug
+            request: Workflows to run with target/config revisions and inputs
         """
-        params = self._paginated_params(page=page, per_page=per_page)
-        if branch:
-            params["branch"] = branch
-
-        if workflow_id:
-            data = await self._get(
-                f"/repos/{owner}/{repo}/workflows/{workflow_id}/runs", params=params
-            )
-        else:
-            data = await self._get(f"/repos/{owner}/{repo}/actions/runs", params=params)
-
-        return PaginatedResponse[WorkflowRun].model_validate(data)
-
-    async def get_workflow_run(self, owner: str, repo: str, run_id: str) -> WorkflowRun:
-        """Get a single workflow run.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            run_id: Run ID
-
-        Returns:
-            Workflow run details
-        """
-        data = await self._get(f"/repos/{owner}/{repo}/actions/runs/{run_id}")
-        return WorkflowRun.model_validate(data)
-
-    async def cancel_workflow_run(self, owner: str, repo: str, run_id: str) -> None:
-        """Cancel a workflow run.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            run_id: Run ID
-        """
-        await self._post(f"/repos/{owner}/{repo}/actions/runs/{run_id}/cancel")
-
-    async def rerun_workflow_run(self, owner: str, repo: str, run_id: str) -> None:
-        """Re-run a workflow run.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            run_id: Run ID
-        """
-        await self._post(f"/repos/{owner}/{repo}/actions/runs/{run_id}/rerun")
-
-    # Pipelines
-    async def list_pipelines(
-        self,
-        owner: str,
-        repo: str,
-        page: int = 1,
-        per_page: int = 30,
-    ) -> PaginatedResponse[Pipeline]:
-        """List pipelines in a repository.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            page: Page number
-            per_page: Items per page
-
-        Returns:
-            Paginated list of pipelines
-        """
-        params = self._paginated_params(page=page, per_page=per_page)
-        data = await self._get(f"/repos/{owner}/{repo}/pipelines", params=params)
-        return PaginatedResponse[Pipeline].model_validate(data)
-
-    async def get_pipeline(self, owner: str, repo: str, pipeline_id: str) -> Pipeline:
-        """Get a single pipeline.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            pipeline_id: Pipeline ID
-
-        Returns:
-            Pipeline details
-        """
-        data = await self._get(f"/repos/{owner}/{repo}/pipelines/{pipeline_id}")
-        return Pipeline.model_validate(data)
-
-    async def create_pipeline(
-        self, owner: str, repo: str, ref: str, variables: dict | None = None
-    ) -> Pipeline:
-        """Create a new pipeline.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            ref: Git ref (branch/tag)
-            variables: Pipeline variables
-
-        Returns:
-            Created pipeline
-        """
-        json_data = {"ref": ref}
-        if variables:
-            json_data["variables"] = variables
-
         data = await self._post(
-            f"/repos/{owner}/{repo}/pipelines",
-            json=json_data,
+            f"/repos/{owner}/{repo}/cicd/runs",
+            json=request.model_dump(exclude_none=True, by_alias=True),
         )
-        return Pipeline.model_validate(data)
+        return Run.model_validate(data)
 
-    async def retry_pipeline(self, owner: str, repo: str, pipeline_id: str) -> Pipeline:
-        """Retry a failed pipeline.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            pipeline_id: Pipeline ID
-
-        Returns:
-            New pipeline
-        """
-        data = await self._post(f"/repos/{owner}/{repo}/pipelines/{pipeline_id}/retry")
-        return Pipeline.model_validate(data)
-
-    async def cancel_pipeline(
-        self, owner: str, repo: str, pipeline_id: str
-    ) -> Pipeline:
-        """Cancel a pipeline.
+    async def get_workflow(
+        self, owner: str, repo: str, run_slug: str, workflow_slug: str
+    ) -> CIWorkflow:
+        """Get a workflow launch inside a run (tasks, cubes, progress).
 
         Args:
-            owner: Repository owner
-            repo: Repository name
-            pipeline_id: Pipeline ID
-
-        Returns:
-            Cancelled pipeline
+            owner: Repository owner (org/user slug)
+            repo: Repository slug
+            run_slug: Run counter serves as a slug
+            workflow_slug: Workflow name as defined in the config
         """
-        data = await self._post(f"/repos/{owner}/{repo}/pipelines/{pipeline_id}/cancel")
-        return Pipeline.model_validate(data)
+        data = await self._get(
+            f"/repos/{owner}/{repo}/cicd/runs/{run_slug}/{workflow_slug}"
+        )
+        return CIWorkflow.model_validate(data)
+
+    # Logs
+    async def get_cube_logs(
+        self,
+        owner: str,
+        repo: str,
+        run_slug: str,
+        workflow_slug: str,
+        task_slug: str,
+        cube_slug: str,
+        page: int = 1,
+    ) -> GetCubeLogsResponse:
+        """Get logs from a running CI cube.
+
+        Args:
+            owner: Repository owner (org/user slug)
+            repo: Repository slug
+            run_slug: Run counter serves as a slug
+            workflow_slug: Workflow name as defined in the config
+            task_slug: Task name as defined in the config
+            cube_slug: Cube name as defined in the config
+            page: Page number (pages are read in order; next pages may 404
+                while the current one is still being written)
+        """
+        data = await self._get(
+            f"/repos/{owner}/{repo}/cicd/logs/{run_slug}/{workflow_slug}"
+            f"/{task_slug}/{cube_slug}",
+            params={"page": page},
+        )
+        return GetCubeLogsResponse.model_validate(data)
 
     # Artifacts
-    async def list_artifacts(
+    async def get_artifacts(
         self,
         owner: str,
         repo: str,
-        run_id: str | None = None,
-        page: int = 1,
-        per_page: int = 30,
-    ) -> PaginatedResponse[LegacyArtifact]:
-        """List artifacts.
+        run_slug: str,
+        workflow_slug: str,
+        task_slug: str,
+        cube_slug: str,
+    ) -> GetCubeArtifactsResponse:
+        """Get artifacts produced by a CI cube.
 
         Args:
-            owner: Repository owner
-            repo: Repository name
-            run_id: Optional workflow run ID filter
-            page: Page number
-            per_page: Items per page
-
-        Returns:
-            Paginated list of artifacts
+            owner: Repository owner (org/user slug)
+            repo: Repository slug
+            run_slug: Run counter serves as a slug
+            workflow_slug: Workflow name as defined in the config
+            task_slug: Task name as defined in the config
+            cube_slug: Cube name as defined in the config
         """
-        params = self._paginated_params(page=page, per_page=per_page)
-
-        if run_id:
-            data = await self._get(
-                f"/repos/{owner}/{repo}/actions/runs/{run_id}/artifacts",
-                params=params,
-            )
-        else:
-            data = await self._get(
-                f"/repos/{owner}/{repo}/actions/artifacts",
-                params=params,
-            )
-
-        return PaginatedResponse[LegacyArtifact].model_validate(data)
-
-    async def get_artifact(
-        self, owner: str, repo: str, artifact_id: str
-    ) -> LegacyArtifact:
-        """Get a single artifact.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            artifact_id: Artifact ID
-
-        Returns:
-            Artifact details
-        """
-        data = await self._get(f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}")
-        return LegacyArtifact.model_validate(data)
-
-    async def delete_artifact(self, owner: str, repo: str, artifact_id: str) -> None:
-        """Delete an artifact.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            artifact_id: Artifact ID
-        """
-        await self._delete(f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}")
-
-    async def download_artifact(self, owner: str, repo: str, artifact_id: str) -> bytes:
-        """Download an artifact.
-
-        Args:
-            owner: Repository owner
-            repo: Repository name
-            artifact_id: Artifact ID
-
-        Returns:
-            Artifact content as bytes
-        """
-        response = await self._client.client.get(
-            f"/repos/{owner}/{repo}/actions/artifacts/{artifact_id}/zip"
+        data = await self._get(
+            f"/repos/{owner}/{repo}/cicd/artifacts/{run_slug}/{workflow_slug}"
+            f"/{task_slug}/{cube_slug}"
         )
-        response.raise_for_status()
-        return response.content
+        return GetCubeArtifactsResponse.model_validate(data)

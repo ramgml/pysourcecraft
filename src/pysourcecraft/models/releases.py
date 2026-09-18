@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from pydantic import Field, model_validator
+from pydantic import AliasChoices, Field, model_validator
 
 from pysourcecraft.models.base import BaseModel
 from pysourcecraft.models.users import UserEmbedded
@@ -124,21 +124,31 @@ class CreateReleaseRequest(BaseModel):
     via aliases but are sent in the API shape.
     """
 
-    tag_name: str = Field(min_length=1, alias="tag", serialization_alias="tag")
+    tag_name: str = Field(
+        min_length=1,
+        validation_alias=AliasChoices("tag_name", "tag"),
+        serialization_alias="tag",
+    )
     name: str | None = Field(
         None,
-        alias="title",
+        validation_alias=AliasChoices("name", "title"),
         serialization_alias="title",
         description="Release name",
     )
     body: str | None = Field(
         None,
-        alias="release_notes",
+        validation_alias=AliasChoices("body", "release_notes"),
         serialization_alias="release_notes",
         description="Release notes",
     )
     draft: bool | None = Field(
         None, description="Create as draft (API wants publish=true when not draft)"
+    )
+    prerelease: bool | None = Field(
+        None,
+        validation_alias=AliasChoices("prerelease", "pre_release", "is_pre_release"),
+        serialization_alias="is_pre_release",
+        description="Mark release as a pre-release (API: is_pre_release)",
     )
     publish: bool | None = Field(
         None, description="Publish immediately instead of creating a draft"
@@ -168,18 +178,22 @@ class UpdateReleaseRequest(BaseModel):
     ``{title, release_notes}``.
     """
 
-    tag_name: str | None = Field(None, min_length=1, description="Git tag name")
+    tag_name: str | None = Field(
+        None,
+        min_length=1,
+        validation_alias=AliasChoices("tag_name", "tag"),
+        serialization_alias="tag",
+        description="Git tag name",
+    )
     name: str | None = Field(
         None,
-        alias="title",
-        validation_alias="title",
+        validation_alias=AliasChoices("name", "title"),
         serialization_alias="title",
         description="Release name",
     )
     body: str | None = Field(
         None,
-        alias="release_notes",
-        validation_alias="release_notes",
+        validation_alias=AliasChoices("body", "release_notes"),
         serialization_alias="release_notes",
         description="Release notes",
     )

@@ -358,70 +358,84 @@ def mock_release_data(mock_datetime: datetime) -> dict[str, Any]:
 
 
 @pytest.fixture
-def mock_workflow_run_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock workflow run data."""
+def mock_run_data(mock_datetime: datetime) -> dict[str, Any]:
+    """Return mock CI/CD run data matching swagger Run schema."""
     return {
-        "id": "run-001",
-        "name": "CI",
-        "run_number": 42,
-        "run_attempt": 1,
-        "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/actions/runs/1",
-        "html_url": "https://sourcecraft.dev/testuser/test-repo/actions/runs/1",
-        "state": "completed",
-        "conclusion": "success",
-        "event": "push",
-        "head_branch": "main",
-        "head_sha": "abc123def456",
-        "head_commit_message": "Fix bug in parser",
-        "actor_id": "user-123",
-        "actor_username": "testuser",
-        "triggering_actor_id": None,
-        "triggering_actor_username": None,
-        "repository_id": "repo-789",
-        "repository_name": "test-repo",
-        "pull_request_number": None,
-        "pull_request_url": None,
-        "created_at": mock_datetime.isoformat(),
-        "updated_at": mock_datetime.isoformat(),
-        "run_started_at": mock_datetime.isoformat(),
-        "completed_at": mock_datetime.isoformat(),
-        "duration_seconds": 120,
-        "jobs_url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/actions/runs/1/jobs",
-        "logs_url": "https://sourcecraft.dev/testuser/test-repo/actions/runs/1/logs",
-        "check_suite_url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/check-suites/1",
-        "artifacts_url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/actions/runs/1/artifacts",
-        "cancel_url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/actions/runs/1/cancel",
-        "rerun_url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/actions/runs/1/rerun",
-        "jobs_count": 3,
-        "jobs_completed": 3,
-        "jobs_failed": 0,
-        "path": ".github/workflows/ci.yml",
-        "display_title": "Fix bug in parser",
+        "id": "",
+        "slug": "12",
+        "dates": {
+            "created_at": mock_datetime.isoformat(),
+            "started_at": mock_datetime.isoformat(),
+            "finished_at": mock_datetime.isoformat(),
+            "updated_at": mock_datetime.isoformat(),
+        },
+        "status": "success",
+        "workflows": [
+            {
+                "id": "",
+                "slug": "ci",
+                "description": "Main pipeline",
+                "dates": {"created_at": mock_datetime.isoformat()},
+                "status": "success",
+                "tasks": [
+                    {
+                        "id": "",
+                        "slug": "build",
+                        "status": "success",
+                        "cubes": [
+                            {
+                                "id": "",
+                                "slug": "package",
+                                "status": "success",
+                                "artifacts": [
+                                    {
+                                        "id": "",
+                                        "local_path": "dist/app.whl",
+                                        "dates": {
+                                            "registered_at": mock_datetime.isoformat()
+                                        },
+                                        "status": "success",
+                                        "download_url": "https://sourcecraft.dev/dl/app.whl",
+                                    }
+                                ],
+                            }
+                        ],
+                        "progress": {"percent": 1.0},
+                    }
+                ],
+                "progress": {"percent": 1.0},
+            }
+        ],
+        "event_type": "push",
+        "error_messages": [],
+        "pull": None,
+        "user": {"id": "user-123", "slug": "testuser"},
     }
 
 
 @pytest.fixture
-def mock_pipeline_data(mock_datetime: datetime) -> dict[str, Any]:
-    """Return mock pipeline data."""
+def mock_logs_data() -> dict[str, Any]:
+    """Return mock cube logs response matching swagger GetCubeLogsResponse."""
+    return {"logs": "[2024-01-15] build started\n", "page_complete": True, "done": True}
+
+
+@pytest.fixture
+def mock_cube_artifacts_data(mock_datetime: datetime) -> dict[str, Any]:
+    """Return mock cube artifacts response matching swagger GetCubeArtifactsResponse."""
     return {
-        "id": "pipeline-001",
-        "name": "Test Pipeline",
-        "status": "success",
-        "url": "https://api.sourcecraft.dev/v1/repos/testuser/test-repo/pipelines/1",
-        "web_url": "https://sourcecraft.dev/testuser/test-repo/pipelines/1",
-        "repository_id": "repo-789",
-        "ref": "main",
-        "sha": "abc123def456",
-        "source": "push",
-        "trigger_id": "user-123",
-        "trigger_username": "testuser",
-        "created_at": mock_datetime.isoformat(),
-        "updated_at": mock_datetime.isoformat(),
-        "started_at": mock_datetime.isoformat(),
-        "finished_at": mock_datetime.isoformat(),
-        "duration_seconds": 300,
-        "stages": [],
-        "coverage": 85.5,
+        "artifacts": [
+            {
+                "id": "",
+                "local_path": "dist/app.whl",
+                "dates": {
+                    "registered_at": mock_datetime.isoformat(),
+                    "obtained_at": mock_datetime.isoformat(),
+                    "updated_at": mock_datetime.isoformat(),
+                },
+                "status": "success",
+                "download_url": "https://sourcecraft.dev/dl/app.whl",
+            }
+        ]
     }
 
 
@@ -446,6 +460,17 @@ def create_paginated_response(
         "per_page": per_page,
         "total_pages": total_pages,
     }
+
+
+def create_runs_response(
+    runs: list[dict[str, Any]],
+    next_page_token: str | None = None,
+) -> dict[str, Any]:
+    """Create a ListRunsResponse structure (token-paginated)."""
+    response: dict[str, Any] = {"runs": runs}
+    if next_page_token:
+        response["next_page_token"] = next_page_token
+    return response
 
 
 def create_error_response(
