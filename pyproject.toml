@@ -1,6 +1,6 @@
 [project]
 name = "pysourcecraft"
-version = "0.1.0"
+version = "0.1.7"
 description = "SourceCraft API-client"
 readme = "README.md"
 requires-python = ">=3.13"

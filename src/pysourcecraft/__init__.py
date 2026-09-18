@@ -16,7 +16,7 @@ from pysourcecraft.models import (
     GetCubeArtifactsResponse,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.7"
 __all__ = [
     "SourceCraftClient",
     "BaseModel",
